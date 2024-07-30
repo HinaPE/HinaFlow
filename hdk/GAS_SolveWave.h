@@ -1,6 +1,17 @@
 #ifndef GAS_SOLVEWAVE_H
 #define GAS_SOLVEWAVE_H
 
+/******************************************************************************
+ *
+ * HinaFlow fluid solver framework
+ * Copyright 2024 Xayah Hina
+ *
+ * This program is free software, distributed under the terms of the
+ * Apache License, Version 2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ ******************************************************************************/
+
 
 #include <GAS/GAS_SubSolver.h>
 

@@ -5,7 +5,7 @@ HinaFlow is a Houdini HDK based, open-source framework targeted at fluid simulat
 
 ## Build Instructions
 
-**Before building the project, make sure you have installed [Houdini](https://www.sidefx.com/)**
+**Before building the project, make sure you have installed [Houdini](https://www.sidefx.com/).**
 
 - First, clone the repository
     ```shell

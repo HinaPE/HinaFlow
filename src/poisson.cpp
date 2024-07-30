@@ -8,6 +8,7 @@ void HinaFlow::Possion::Solve(const Input& input, const Param& param, Result& re
     const UT_Vector3I res = input.MARKER->getField()->getVoxelRes();
     const float h = input.MARKER->getVoxelSize().maxComponent();
 
+
     // Build A
     UT_SparseMatrixF A(size, size);
     {
@@ -36,6 +37,10 @@ void HinaFlow::Possion::Solve(const Input& input, const Param& param, Result& re
             }
         }
     }
+    A.compile();
+    UT_SparseMatrixRowF AImpl;
+    AImpl.buildFrom(A);
+    UT_VectorF x(0, size - 1);
 
 
     // Build b (Store Divergence Optional)
@@ -70,11 +75,7 @@ void HinaFlow::Possion::Solve(const Input& input, const Param& param, Result& re
 
 
     // Solve System
-    UT_VectorF x(0, size - 1);
     x = b;
-    A.compile();
-    UT_SparseMatrixRowF AImpl;
-    AImpl.buildFrom(A);
     AImpl.solveConjugateGradient(x, b, nullptr);
 
 
@@ -114,7 +115,7 @@ void HinaFlow::Possion::Solve(const Input& input, const Param& param, Result& re
 }
 
 
-namespace HinaFlow::Internal
+namespace HinaFlow::Internal::Possion
 {
     void KnBuildLaplaceMatrixPartial(UT_SparseMatrixF& A, const SIM_IndexField* MARKER, const UT_JobInfo& info)
     {
@@ -196,10 +197,12 @@ namespace HinaFlow::Internal
         vit.setCompressOnExit(true);
         vit.setPartialRange(info.job(), info.numJobs());
 
+        const UT_Vector3I res = PRESSURE->getField()->getVoxelRes();
+
         for (vit.rewind(); !vit.atEnd(); vit.advance())
         {
             const UT_Vector3I cell(vit.x(), vit.y(), vit.z());
-            const auto idx = TO_1D_IDX(cell, PRESSURE->getField()->getVoxelRes());
+            const auto idx = TO_1D_IDX(cell, res);
             vit.setValue(x(idx));
         }
     }
@@ -237,34 +240,32 @@ namespace HinaFlow::Internal
 void HinaFlow::Possion::SolveMultiThreaded(const Input& input, const Param& param, Result& result)
 {
     const int size = static_cast<int>(input.MARKER->getField()->field()->numVoxels());
-    const UT_Vector3I res = input.MARKER->getField()->getVoxelRes();
-    const float h = input.MARKER->getVoxelSize().maxComponent();
 
 
     // Build A
     UT_SparseMatrixF A(size, size);
-    Internal::KnBuildLaplaceMatrix(A, input.MARKER);
+    Internal::Possion::KnBuildLaplaceMatrix(A, input.MARKER);
+    A.compile();
+    UT_SparseMatrixRowF AImpl;
+    AImpl.buildFrom(A);
+    UT_VectorF x(0, size - 1);
 
 
     // Build b (Store Divergence Optional)
     UT_VectorF b(0, size - 1);
-    Internal::KnBuildRhs(b, input.FLOW, input.MARKER, result.DIVERGENCE);
+    Internal::Possion::KnBuildRhs(b, input.FLOW, input.MARKER, result.DIVERGENCE);
 
 
     // Solve System
-    UT_VectorF x(0, size - 1);
     x = b;
-    A.compile();
-    UT_SparseMatrixRowF AImpl;
-    AImpl.buildFrom(A);
     AImpl.solveConjugateGradient(x, b, nullptr);
 
 
     // Store Pressure
-    Internal::KnStorePressure(result.PRESSURE, x);
+    Internal::Possion::KnStorePressure(result.PRESSURE, x);
 
 
     // Subtract Pressure Gradient
     for (const int AXIS : (input.FLOW->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2}))
-        Internal::KnSubtractPressureGradient(result.FLOW, result.PRESSURE, AXIS);
+        Internal::Possion::KnSubtractPressureGradient(result.FLOW, result.PRESSURE, AXIS);
 }

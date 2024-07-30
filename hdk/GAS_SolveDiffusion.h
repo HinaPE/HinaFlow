@@ -13,6 +13,10 @@ public:
     inline static const char* DATANAME = "SolveDiffusion";
     inline static const bool UNIQUE_DATANAME = false;
 
+    GETSET_DATA_FUNCS_I("PCG_METHOD", PCG_METHOD)
+    GETSET_DATA_FUNCS_B("MultiThreaded", MultiThreaded)
+    GETSET_DATA_FUNCS_F("Diffusion", Diffusion)
+
 protected:
     explicit GAS_SolveDiffusion(const SIM_DataFactory* factory): BaseClass(factory) {}
     bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) final;

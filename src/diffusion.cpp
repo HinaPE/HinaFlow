@@ -11,6 +11,7 @@
  *
  ******************************************************************************/
 
+
 #include "common.h"
 
 void HinaFlow::Diffusion::Solve(const Input& input, const Param& param, Result& result)

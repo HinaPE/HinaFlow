@@ -16,12 +16,17 @@ set(HDK_NODEs
 set(SOURCES
         hdk/Entrance.cpp
         common.h
-        src/poisson.cpp
-        src/poisson.h
         src/diffusion.cpp
         src/diffusion.h
+        src/image.cpp
+        src/image.h
+        src/poisson.cpp
+        src/poisson.h
         src/wave.cpp
         src/wave.h
+
+        hdk/SOP_Image2Volume.cpp
+        hdk/SOP_Image2Volume.h
 )
 foreach (NODE ${HDK_NODEs})
     list(APPEND SOURCES hdk/GAS_${NODE}.cpp hdk/GAS_${NODE}.h)

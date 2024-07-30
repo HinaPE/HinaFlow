@@ -11,6 +11,7 @@
  *
  ******************************************************************************/
 
+
 #include "common.h"
 
 void HinaFlow::Wave::Solve(const Input& input, const Param& param, Result& result)

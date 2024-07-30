@@ -1,4 +1,21 @@
 # HinaFlow
-![hinaflow logo](logo.png)
+![HinaFlow logo](logo.png)
 
 HinaFlow is a Houdini HDK based, open-source framework targeted at fluid simulation research in Computer Graphics and Machine Learning.
+
+## Build Instructions
+
+**Before building the project, make sure you have installed [Houdini](https://www.sidefx.com/)**
+
+- First, clone the repository
+    ```shell
+    git clone https://github.com/HinaPE/HinaFlow.git
+    cd HinaFlow
+    ```
+- Then, change `Houdini_PATH` in `FindHoudini.cmake` to your Houdini installation path.
+- Build the project using CMake
+    ```shell
+    cmake -B build -S .
+    cmake --build build
+    ```
+- Finally, open Houdini, create a DOP network, then you can find `HinaFlow` nodes in the tab menu under Digital Assets directory.

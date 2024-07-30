@@ -7,10 +7,13 @@ project(HinaFlow)
 # Find Houdini
 include(./FindHoudini.cmake)
 
-set(HDK_NODEs
+set(DOP_NODEs
         SolvePoisson
         SolveDiffusion
         SolveWave
+)
+set(SOP_NODEs
+        Image2Volume
 )
 
 set(SOURCES
@@ -28,10 +31,17 @@ set(SOURCES
         hdk/SOP_Image2Volume.cpp
         hdk/SOP_Image2Volume.h
 )
-foreach (NODE ${HDK_NODEs})
+
+foreach (NODE ${DOP_NODEs})
     list(APPEND SOURCES hdk/GAS_${NODE}.cpp hdk/GAS_${NODE}.h)
     configure_file(./icon.png ${HOUDINI_INSTALL_DIR}/config/icons/DOP_${NODE}.png COPYONLY)
 endforeach ()
+
+foreach (NODE ${SOP_NODEs})
+    list(APPEND SOURCES hdk/SOP_${NODE}.cpp hdk/SOP_${NODE}.h)
+    configure_file(./icon.png ${HOUDINI_INSTALL_DIR}/config/icons/SOP_${NODE}.png COPYONLY)
+endforeach ()
+
 add_library(SIM_HinaFlow SHARED ${SOURCES})
 target_link_libraries(SIM_HinaFlow PUBLIC Houdini)
 target_include_directories(SIM_HinaFlow PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

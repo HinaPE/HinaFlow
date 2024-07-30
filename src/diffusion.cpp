@@ -54,7 +54,7 @@ void HinaFlow::Diffusion::Solve(const Input& input, const Param& param, Result& 
         UT_VectorF b(0, size - 1);
         {
             UT_VoxelArrayIteratorF vit;
-            vit.setArray(input.FIELDS->getField()->fieldNC());
+            vit.setConstArray(input.FIELDS->getField()->field());
             for (vit.rewind(); !vit.atEnd(); vit.advance())
             {
                 const UT_Vector3I cell(vit.x(), vit.y(), vit.z());
@@ -95,7 +95,7 @@ void HinaFlow::Diffusion::Solve(const Input& input, const Param& param, Result& 
             UT_VectorF b(0, size - 1);
             {
                 UT_VoxelArrayIteratorF vit;
-                vit.setArray(input.FIELDV->getField(AXIS)->fieldNC());
+                vit.setConstArray(input.FIELDV->getField(AXIS)->field());
                 for (vit.rewind(); !vit.atEnd(); vit.advance())
                 {
                     const UT_Vector3I cell(vit.x(), vit.y(), vit.z());
@@ -217,7 +217,6 @@ namespace HinaFlow::Internal::Diffusion
 void HinaFlow::Diffusion::SolveMultiThreaded(const Input& input, const Param& param, Result& result)
 {
     const int size = static_cast<int>(input.MARKER->getField()->field()->numVoxels());
-    const UT_Vector3I res = input.MARKER->getField()->getVoxelRes();
     const float h = input.MARKER->getVoxelSize().maxComponent();
 
 

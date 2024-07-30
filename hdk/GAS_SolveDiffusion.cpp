@@ -7,13 +7,7 @@ const SIM_DopDescription* GAS_SolveDiffusion::getDopDescription()
 {
     static std::vector<PRM_Template> PRMs;
     PRMs.clear();
-    ACTIVATE_GAS_GEOMETRY
     ACTIVATE_GAS_DENSITY
-    ACTIVATE_GAS_TEMPERATURE
-    ACTIVATE_GAS_VELOCITY
-    ACTIVATE_GAS_SOURCE
-    ACTIVATE_GAS_DIVERGENCE
-    ACTIVATE_GAS_PRESSURE
     ACTIVATE_GAS_STENCIL
     ACTIVATE_GAS_COLOR
 
@@ -30,7 +24,7 @@ const SIM_DopDescription* GAS_SolveDiffusion::getDopDescription()
     PRMs.emplace_back(PRM_ORD, 1, &PCG_METHODName, &PCG_METHODNameDefault, &CLTestPCG_METHOD);
     PARAMETER_BOOL(MultiThreaded, false)
 
-    PARAMETER_FLOAT(Diffusion, 0.1)
+    PARAMETER_FLOAT(Diffusion, 0.01)
     PRMs.emplace_back();
 
     static SIM_DopDescription DESC(GEN_NODE,

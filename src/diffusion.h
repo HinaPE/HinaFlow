@@ -11,8 +11,8 @@ namespace HinaFlow
     {
         struct Input
         {
-            SIM_ScalarField* FIELDS = nullptr; // required
-            SIM_VectorField* FIELDV = nullptr; // required
+            SIM_ScalarField* FIELDS = nullptr; // optional, but required if FIELDV is not provided
+            SIM_VectorField* FIELDV = nullptr; // optional, but required if FIELDS is not provided
             SIM_IndexField* MARKER = nullptr; // required
             float dt = 1.f; // required
         };
@@ -20,13 +20,13 @@ namespace HinaFlow
         struct Param
         {
             SIM_RawField::PCG_METHOD preconditioner = SIM_RawField::PCG_METHOD::PCG_MIC;
-            float diffusion = 0.1f;
+            float diffusion = 0.01f;
         };
 
         struct Result // Results
         {
-            SIM_ScalarField* FIELDS = nullptr; // required
-            SIM_VectorField* FIELDV = nullptr; // required
+            SIM_ScalarField* FIELDS = nullptr; // optional, but required if FIELDV is not provided
+            SIM_VectorField* FIELDV = nullptr; // optional, but required if FIELDS is not provided
         };
 
         static void Solve(const Input& input, const Param& param, Result& result);

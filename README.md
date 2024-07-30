@@ -19,3 +19,16 @@ HinaFlow is a Houdini HDK based, open-source framework targeted at fluid simulat
     cmake --build build
     ```
 - Finally, open Houdini, create a DOP network, then you can find `HinaFlow` nodes in the tab menu under Digital Assets directory.
+
+
+## References
+
+### Papers
+- Stam, Jos. “Stable fluids.” Proceedings of the 26th annual conference on Computer graphics and interactive techniques (1999): n. pag.
+- Stam, Jos. “Real-Time Fluid Dynamics for Games.” (2003).
+
+
+### Repositories
+- [mantaflow](https://github.com/tum-pbs/mantaflow.git)
+- [CubbyFlow](https://github.com/CubbyFlow/CubbyFlow.git)
+- [SPlisHSPlasH](https://github.com/InteractiveComputerGraphics/SPlisHSPlasH.git)

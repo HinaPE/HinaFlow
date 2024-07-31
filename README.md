@@ -3,6 +3,8 @@
 
 HinaFlow is a Houdini HDK based, open-source framework targeted at fluid simulation research in Computer Graphics and Machine Learning.
 
+HinaFlow is a recursive acronym for "**H**inaFlow **i**s **n**ot **a** **F**luid **L**earning **O**ptimization **W**orkflow".
+
 ## Build Instructions
 
 **Before building the project, make sure you have installed [Houdini](https://www.sidefx.com/).**

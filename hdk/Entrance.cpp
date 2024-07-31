@@ -2,16 +2,18 @@
 #include <OP/OP_Operator.h>
 #include <OP/OP_OperatorTable.h>
 
-#include "GAS_SolvePoisson.h"
+#include "GAS_DebugSPHKernel.h"
 #include "GAS_SolveDiffusion.h"
+#include "GAS_SolvePoisson.h"
 #include "GAS_SolveWave.h"
 
 #include "SOP_Image2Volume.h"
 
 void initializeSIM(void*)
 {
-    IMPLEMENT_DATAFACTORY(GAS_SolvePoisson)
+    IMPLEMENT_DATAFACTORY(GAS_DebugSPHKernel)
     IMPLEMENT_DATAFACTORY(GAS_SolveDiffusion)
+    IMPLEMENT_DATAFACTORY(GAS_SolvePoisson)
     IMPLEMENT_DATAFACTORY(GAS_SolveWave)
 }
 

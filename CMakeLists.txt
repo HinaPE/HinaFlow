@@ -7,9 +7,18 @@ project(HinaFlow)
 # Find Houdini
 include(./FindHoudini.cmake)
 
+set(SRC_FILES
+        diffusion
+        image
+        pbf
+        poisson
+        tomography
+        wave
+)
 set(DOP_NODEs
-        SolvePoisson
+        DebugSPHKernel
         SolveDiffusion
+        SolvePoisson
         SolveWave
 )
 set(SOP_NODEs
@@ -19,20 +28,11 @@ set(SOP_NODEs
 set(SOURCES
         hdk/Entrance.cpp
         common.h
-        src/diffusion.cpp
-        src/diffusion.h
-        src/image.cpp
-        src/image.h
-        src/poisson.cpp
-        src/poisson.h
-        src/tomography.cpp
-        src/tomography.h
-        src/wave.cpp
-        src/wave.h
-
-        hdk/SOP_Image2Volume.cpp
-        hdk/SOP_Image2Volume.h
 )
+
+foreach (NODE ${SRC_FILES})
+    list(APPEND SOURCES src/${NODE}.cpp src/${NODE}.h)
+endforeach ()
 
 foreach (NODE ${DOP_NODEs})
     list(APPEND SOURCES hdk/GAS_${NODE}.cpp hdk/GAS_${NODE}.h)

@@ -1,5 +1,5 @@
-#ifndef HINAFLOW_WAVE_H
-#define HINAFLOW_WAVE_H
+#ifndef HINAFLOW_PBF_H
+#define HINAFLOW_PBF_H
 
 /******************************************************************************
  *
@@ -13,31 +13,29 @@
  ******************************************************************************/
 
 
-#include <SIM/SIM_ScalarField.h>
-#include <SIM/SIM_VectorField.h>
-#include <SIM/SIM_IndexField.h>
+#include <GU/GU_Detail.h>
 
 namespace HinaFlow
 {
-    struct Wave
+    struct PBF
     {
         struct Input
         {
-            SIM_ScalarField* FIELDS = nullptr; // required
-            SIM_ScalarField* FIELDS_PREV = nullptr; // required
-            SIM_IndexField* MARKER = nullptr; // required
+            GU_Detail* gdp = nullptr; // required
             float dt = 1.f; // required
         };
 
         struct Param
         {
-            SIM_RawField::PCG_METHOD preconditioner = SIM_RawField::PCG_METHOD::PCG_MIC;
-            float wave = 0.01f;
+            float kernel_radius = 0.04f;
+            float viscosity = 0.01f;
+            float gravity = -9.8f;
+            float rest_density = 1000.f;
         };
 
         struct Result // Results
         {
-            SIM_ScalarField* FIELDS = nullptr; // required
+            GU_Detail* gdp = nullptr; // required
         };
 
         static void Solve(const Input& input, const Param& param, Result& result);
@@ -46,4 +44,4 @@ namespace HinaFlow
 }
 
 
-#endif //HINAFLOW_WAVE_H
+#endif //HINAFLOW_PBF_H

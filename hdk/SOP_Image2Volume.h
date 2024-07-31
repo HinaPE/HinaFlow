@@ -21,6 +21,7 @@ public:
     inline static const char* DOP_NAME = "Image2Volume";
     inline static const char* DOP_ENGLISH = "Image to Volume";
     static PRM_Template* buildTemplates();
+    const SOP_NodeVerb* cookVerb() const final;
     static OP_Node* myConstructor(OP_Network* net, const char* name, OP_Operator* op) { return new SOP_Image2Volume(net, name, op); }
 
 protected:

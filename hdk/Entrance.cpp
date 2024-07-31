@@ -23,11 +23,11 @@ void newSopOperator(OP_OperatorTable* table)
         SOP_Image2Volume::DOP_ENGLISH, // UI name
         SOP_Image2Volume::myConstructor, // How to build the SOP
         SOP_Image2Volume::buildTemplates(), // My parameters
-        0, // Min # of sources
-        0, // Max # of sources
+        1, // Min # of sources
+        2, // Max # of sources
         nullptr, // Custom local variables (none)
-        OP_FLAG_GENERATOR);
+        OP_FLAG_GENERATOR); // Flag it as generator
 
     op->setOpTabSubMenuPath("HinaFlow");
-    table->addOperator(op); // Flag it as generator
+    table->addOperator(op);
 }

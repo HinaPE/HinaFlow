@@ -24,10 +24,24 @@
 
 #include <PRM/PRM_Template.h>
 #include <PRM/PRM_Default.h>
+#include <PRM/PRM_Include.h>
+#include <PRM/PRM_TemplateBuilder.h>
+
+#include <OP/OP_Operator.h>
+#include <OP/OP_AutoLockInputs.h>
+
+#include <SOP/SOP_NodeVerb.h>
+
+#include <GU/GU_Detail.h>
+#include <GEO/GEO_PrimVolume.h>
+#include <GU/GU_PrimVolume.h>
 
 #include <UT/UT_MultigridArray.h>
 #include <UT/UT_ThreadedAlgorithm.h>
 #include <UT/UT_SparseMatrix.h>
+#include <UT/UT_StringHolder.h>
+
+#include <SYS/SYS_Math.h>
 
 #include <PY/PY_Python.h>
 #include <PY/PY_CPythonAPI.h>

@@ -24,6 +24,8 @@ public:
     inline static const char* DATANAME = "DebugSPHKernel";
     inline static const bool UNIQUE_DATANAME = false;
 
+    GETSET_DATA_FUNCS_F("KernelRadius", KernelRadius)
+
 protected:
     explicit GAS_DebugSPHKernel(const SIM_DataFactory* factory): BaseClass(factory) {}
     bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) final;

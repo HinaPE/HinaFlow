@@ -12,7 +12,10 @@
  *
  ******************************************************************************/
 
+
 #include "common.h"
+
+using UT::Literal::operator ""_sh;
 
 class SOP_Image2VolumeVerb : public SOP_NodeVerb
 {
@@ -25,7 +28,6 @@ public:
     static const char* const theDsFile;
 };
 
-using UT::Literal::operator ""_sh;
 const UT_StringHolder SOP_Image2VolumeVerb::theSOPTypeName("hdk_Image2Volume"_sh);
 const SOP_NodeVerb::Register<SOP_Image2VolumeVerb> SOP_Image2VolumeVerb::theVerb;
 const char* const SOP_Image2VolumeVerb::theDsFile = R"THEDSFILE(
@@ -233,12 +235,4 @@ PRM_Template* SOP_Image2Volume::buildTemplates()
     return templ.templates();
 }
 
-const SOP_NodeVerb* SOP_Image2Volume::cookVerb() const
-{
-    return SOP_Image2VolumeVerb::theVerb.get();
-}
-
-OP_ERROR SOP_Image2Volume::cookMySop(OP_Context& context)
-{
-    return cookMyselfAsVerb(context);
-}
+const SOP_NodeVerb* SOP_Image2Volume::cookVerb() const { return SOP_Image2VolumeVerb::theVerb.get(); }

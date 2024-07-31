@@ -33,8 +33,8 @@ const SIM_DopDescription* GAS_SolvePoisson::getDopDescription()
     };
     static PRM_Name PCG_METHODName("PCG_METHOD", "PCG METHOD");
     static PRM_Default PCG_METHODNameDefault(3);
-    static PRM_ChoiceList CLTestPCG_METHOD(PRM_CHOICELIST_SINGLE, PCG_METHOD.data());
-    PRMs.emplace_back(PRM_ORD, 1, &PCG_METHODName, &PCG_METHODNameDefault, &CLTestPCG_METHOD);
+    static PRM_ChoiceList CLPCG_METHOD(PRM_CHOICELIST_SINGLE, PCG_METHOD.data());
+    PRMs.emplace_back(PRM_ORD, 1, &PCG_METHODName, &PCG_METHODNameDefault, &CLPCG_METHOD);
     PARAMETER_BOOL(MultiThreaded, false)
     PRMs.emplace_back();
 

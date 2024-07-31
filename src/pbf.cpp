@@ -59,3 +59,7 @@ void HinaFlow::PBF::Solve(const Input& input, const Param& param, Result& result
 void HinaFlow::PBF::SolveMultiThreaded(const Input& input, const Param& param, Result& result)
 {
 }
+
+void HinaFlow::PBF::SolveCUDA(const Input& input, const Param& param, Result& result)
+{
+}

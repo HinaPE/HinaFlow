@@ -20,13 +20,15 @@ class SOP_Image2Volume : public SOP_Node
 public:
     inline static const char* DOP_NAME = "Image2Volume";
     inline static const char* DOP_ENGLISH = "Image to Volume";
+
+public:
     static PRM_Template* buildTemplates();
-    const SOP_NodeVerb* cookVerb() const final;
     static OP_Node* myConstructor(OP_Network* net, const char* name, OP_Operator* op) { return new SOP_Image2Volume(net, name, op); }
+    const SOP_NodeVerb* cookVerb() const final;
 
 protected:
     SOP_Image2Volume(OP_Network* net, const char* name, OP_Operator* op) : SOP_Node(net, name, op) {}
-    OP_ERROR cookMySop(OP_Context& context) final;
+    OP_ERROR cookMySop(OP_Context& context) final { return cookMyselfAsVerb(context); }
 };
 
 

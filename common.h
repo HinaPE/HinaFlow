@@ -1,5 +1,5 @@
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef HINAFLOW_COMMON_H
+#define HINAFLOW_COMMON_H
 
 /******************************************************************************
  *
@@ -11,6 +11,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  *
  ******************************************************************************/
+
 
 #include <SIM/SIM_Engine.h>
 #include <SIM/SIM_Object.h>
@@ -162,6 +163,121 @@ namespace HinaFlow
     };
     using Kernel = Cubic;
     // @formatter:on
+
+    inline static std::function<float(const UT_Vector3&, const float)> Poly6 = [](const UT_Vector3& r, const float h) -> float
+    {
+        const float h2 = h * h;
+        const float h3 = h2 * h;
+        const float h4 = h2 * h2;
+        const float h5 = h2 * h3;
+        const float r2 = r.length2();
+        const float r1 = sqrt(r2);
+        const float q = r1 / h;
+        if (q > 1.0f)
+            return 0.0f;
+        const float q2 = q * q;
+        const float q3 = q2 * q;
+        const float q4 = q2 * q2;
+        const float q5 = q2 * q3;
+        const float factor = 315.0f / (64.0f * M_PI * h3);
+        return factor * (h2 - r2) * (h2 - r2) * (h2 - r2);
+    };
+
+    inline static std::function<UT_Vector3(const UT_Vector3&, const float)> gradPoly6 = [](const UT_Vector3& r, const float h) -> UT_Vector3
+    {
+        const float h2 = h * h;
+        const float h3 = h2 * h;
+        const float h4 = h2 * h2;
+        const float h5 = h2 * h3;
+        const float r2 = r.length2();
+        const float r1 = sqrt(r2);
+        const float q = r1 / h;
+        if (q > 1.0f)
+            return UT_Vector3(0.0f);
+        const float q2 = q * q;
+        const float q3 = q2 * q;
+        const float q4 = q2 * q2;
+        const float q5 = q2 * q3;
+        const float factor = 945.0f / (32.0f * M_PI * h5);
+        return factor * r * (h2 - r2) * (h2 - r2);
+    };
+
+    inline static std::function<float(const UT_Vector3&, const float)> Spiky = [](const UT_Vector3& r, const float h) -> float
+    {
+        const float h2 = h * h;
+        const float h3 = h2 * h;
+        const float h4 = h2 * h2;
+        const float h5 = h2 * h3;
+        const float r2 = r.length2();
+        const float r1 = sqrt(r2);
+        const float q = r1 / h;
+        if (q > 1.0f)
+            return 0.0f;
+        const float q2 = q * q;
+        const float q3 = q2 * q;
+        const float q4 = q2 * q2;
+        const float q5 = q2 * q3;
+        const float factor = 15.0f / (M_PI * h3);
+        const float factor2 = 45.0f / (M_PI * h4);
+        return factor * (h - r1) * (h - r1) * (h - r1) * q3;
+    };
+
+    inline static std::function<UT_Vector3(const UT_Vector3&, const float)> gradSpiky = [](const UT_Vector3& r, const float h) -> UT_Vector3
+    {
+        const float h2 = h * h;
+        const float h3 = h2 * h;
+        const float h4 = h2 * h2;
+        const float h5 = h2 * h3;
+        const float r2 = r.length2();
+        const float r1 = sqrt(r2);
+        const float q = r1 / h;
+        if (q > 1.0f)
+            return UT_Vector3(0.0f);
+        const float q2 = q * q;
+        const float q3 = q2 * q;
+        const float q4 = q2 * q2;
+        const float q5 = q2 * q3;
+        const float factor = 45.0f / (M_PI * h4);
+        return factor * (h - r1) * (h - r1) * r / r1 * q2;
+    };
+
+    inline static std::function<float(const UT_Vector3&, const float)> Cubic = [](const UT_Vector3& r, const float h) -> float
+    {
+        const float h2 = h * h;
+        const float h3 = h2 * h;
+        const float h4 = h2 * h2;
+        const float h5 = h2 * h3;
+        const float r2 = r.length2();
+        const float r1 = sqrt(r2);
+        const float q = r1 / h;
+        if (q > 1.0f)
+            return 0.0f;
+        const float q2 = q * q;
+        const float q3 = q2 * q;
+        const float q4 = q2 * q2;
+        const float q5 = q2 * q3;
+        const float factor = 8.0f / (M_PI * h3);
+        return factor * (1.0f - q) * (1.0f - q) * (1.0f - q);
+    };
+
+    inline static std::function<UT_Vector3(const UT_Vector3&, const float)> gradCubic = [](const UT_Vector3& r, const float h) -> UT_Vector3
+    {
+        const float h2 = h * h;
+        const float h3 = h2 * h;
+        const float h4 = h2 * h2;
+        const float h5 = h2 * h3;
+        const float r2 = r.length2();
+        const float r1 = sqrt(r2);
+        const float q = r1 / h;
+        if (q > 1.0f)
+            return UT_Vector3(0.0f);
+        const float q2 = q * q;
+        const float q3 = q2 * q;
+        const float q4 = q2 * q2;
+        const float q5 = q2 * q3;
+        const float factor = 24.0f / (M_PI * h4);
+        return factor * r / r1 * (1.0f - q) * (1.0f - q);
+    };
 }
 
-#endif //COMMON_H
+#endif //HINAFLOW_COMMON_H

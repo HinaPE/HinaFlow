@@ -32,6 +32,7 @@ const SIM_DopDescription* GAS_SolverPBF::getDopDescription()
     static PRM_ChoiceList CLKernelType(PRM_CHOICELIST_SINGLE, KernelType.data());
     PRMs.emplace_back(PRM_ORD, 1, &KernelTypeName, &KernelTypeNameDefault, &CLKernelType);
 
+    PARAMETER_VECTOR_FLOAT_N(MaxBound, 3, 0.5, 0.5, 0.5)
     PARAMETER_INT(PressureIteration, 20)
     PARAMETER_FLOAT(KernelRadius, 0.04)
     PARAMETER_FLOAT(Viscosity, 0.01)
@@ -67,6 +68,7 @@ bool GAS_SolverPBF::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Ti
 
     HinaFlow::PBF::Input input{&gdp, static_cast<float>(timestep)};
     HinaFlow::PBF::Param param;
+    param.MaxBound = getMaxBound();
     param.kernel_radius = static_cast<float>(getKernelRadius());
     param.epsilon = static_cast<float>(getEPS());
     param.viscosity = static_cast<float>(getViscosity());
@@ -86,62 +88,19 @@ bool GAS_SolverPBF::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Ti
         throw std::runtime_error("Invalid kernel type");
     }
     HinaFlow::PBF::Result result{&gdp};
-    // HinaFlow::PBF::Advect(input, param, result);
-    // for (int _ = 0; _ < getPressureIteration(); ++_)
+    GLOBAL_ATTRIBUTE_I(ExceedMaxIteration);
+    ExceedMaxIteration_handle.set(0, 0);
 
 
-    // For Debug
-    GA_RWHandleV3 p_handle = gdp.getP();
-    POINT_ATTRIBUTE_F(mass)
-    POINT_ATTRIBUTE_I(nn)
-    POINT_ATTRIBUTE_F(rho1)
-    POINT_ATTRIBUTE_F(rho2)
-    auto& Kernel = HinaFlow::Poly6;
-    if (param.kernel_type == HinaFlow::PBF::Param::KernelType::Spiky)
-        Kernel = HinaFlow::Spiky;
-    else if (param.kernel_type == HinaFlow::PBF::Param::KernelType::Cubic)
-        Kernel = HinaFlow::Cubic;
-    auto& gradKernel = HinaFlow::gradPoly6;
-    if (param.kernel_type == HinaFlow::PBF::Param::KernelType::Spiky)
-        gradKernel = HinaFlow::gradSpiky;
-    else if (param.kernel_type == HinaFlow::PBF::Param::KernelType::Cubic)
-        gradKernel = HinaFlow::gradCubic;
-    GU_NeighbourList Searcher;
-    GU_NeighbourListParms NLP;
-    NLP.setRadius(param.kernel_radius);
-    NLP.setOverrideRadius(true);
-    NLP.setMode(GU_NeighbourListParms::InteractionMode::UNIFORM);
-    Searcher.build(&gdp, NLP);
-    GA_Offset i;
-    std::vector<UT_Array<GA_Offset>> neighbors(gdp.getNumPoints());
-    {
-        GA_FOR_ALL_PTOFF(&gdp, i)
-        {
-            Searcher.getNeighbours(static_cast<int>(i), &gdp, neighbors[gdp.pointIndex(i)]);
-            nn_handle.set(i, static_cast<int>(neighbors[gdp.pointIndex(i)].size()));
-        }
-    }
+    HinaFlow::PBF::Advect(input, param, result);
 
-    {
-        GA_FOR_ALL_PTOFF(&gdp, i)
-        {
-            float density = 0;
-            for (GA_Offset j : neighbors[i])
-                density += mass_handle.get(j) * Kernel(p_handle.get(i) - p_handle.get(j), param.kernel_radius);
-            rho1_handle.set(i, density);
-        }
-    }
     for (int _ = 0; _ < getPressureIteration(); ++_)
-        HinaFlow::PBF::SolvePressure(input, param, result);
     {
-        GA_FOR_ALL_PTOFF(&gdp, i)
-        {
-            float density = 0;
-            for (GA_Offset j : neighbors[i])
-                density += mass_handle.get(j) * Kernel(p_handle.get(i) - p_handle.get(j), param.kernel_radius);
-            rho2_handle.set(i, density);
-        }
+        HinaFlow::PBF::SolvePressure(input, param, result);
+        if (result.done)
+            return true;
     }
+    ExceedMaxIteration_handle.set(0, 1);
 
     return true;
 }

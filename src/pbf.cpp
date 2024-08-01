@@ -14,6 +14,8 @@
 
 #include "common.h"
 
+static std::vector<UT_Vector3> temp;
+
 void HinaFlow::PBF::Advect(const Input& input, const Param& param, Result& result)
 {
     GU_Detail& gdp = *input.gdp;
@@ -34,6 +36,7 @@ void HinaFlow::PBF::SolvePressure(const Input& input, const Param& param, Result
     const int64 size = gdp.getNumPoints();
     GA_Offset i;
     GA_RWHandleV3 p_handle = gdp.getP();
+    POINT_ATTRIBUTE_V3(v)
     POINT_ATTRIBUTE_F(mass)
     POINT_ATTRIBUTE_F(lambda)
     POINT_ATTRIBUTE_I(nn)
@@ -105,18 +108,77 @@ void HinaFlow::PBF::SolvePressure(const Input& input, const Param& param, Result
             p_handle.set(i, p_handle.get(i) + param.dpscale * deltap);
         }
     }
+
+
+    // Enforce Boundary
+    {
+        bool TOP_OPEN = true;
+        GA_FOR_ALL_PTOFF(&gdp, i)
+        {
+            UT_Vector3 pos = p_handle.get(i);
+            UT_Vector3 vel = v_handle.get(i);
+            UT_Vector3 normal{0, 0, 0};
+            if (pos.x() > param.MaxBound.x())
+            {
+                pos.x() = param.MaxBound.x();
+                normal.x() += 1;
+            }
+            if (pos.x() < -param.MaxBound.x())
+            {
+                pos.x() = -param.MaxBound.x();
+                normal.x() -= 1;
+            }
+            if (!TOP_OPEN)
+            {
+                if (pos.y() > param.MaxBound.y())
+                {
+                    pos.y() = param.MaxBound.y();
+                    normal.y() += 1;
+                }
+            }
+            if (pos.y() < -param.MaxBound.y())
+            {
+                pos.y() = -param.MaxBound.y();
+                normal.y() -= 1;
+            }
+            if (pos.z() > param.MaxBound.z())
+            {
+                pos.z() = param.MaxBound.z();
+                normal.z() += 1;
+            }
+            if (pos.z() < -param.MaxBound.z())
+            {
+                pos.z() = -param.MaxBound.z();
+                normal.z() -= 1;
+            }
+            normal.normalize();
+            constexpr float c_f = 0.5f;
+            vel -= (1.f + c_f) * vel.dot(normal) * normal;
+
+            p_handle.set(i, pos);
+            v_handle.set(i, vel);
+        }
+    }
+
+    {
+        float sumC = 0;
+        GA_FOR_ALL_PTOFF(&gdp, i)
+        {
+            float density = 0;
+            for (GA_Offset j : neighbors[i])
+                density += mass_handle.get(j) * Kernel(p_handle.get(i) - p_handle.get(j), param.kernel_radius);
+            sumC += density > param.rest_density ? (density / param.rest_density - 1) : 0;
+        }
+        if (sumC < 1)
+        {
+            result.done = true;
+            return;
+        }
+    }
 }
 
 void HinaFlow::PBF::SolvePressureMultiThreaded(const Input& input, const Param& param, Result& result)
 {
-    // GU_Detail& gdp = *input.gdp;
-    // const int64 size = gdp.getNumPoints();
-    // UTparallelForEachNumber(size, [&](const UT_BlockedRange<int64>& range)
-    // {
-    //     for (int64 i = range.begin(); i != range.end(); ++i)
-    //     {
-    //     }
-    // });
 }
 
 void HinaFlow::PBF::SolvePressureCUDA(const Input& input, const Param& param, Result& result)

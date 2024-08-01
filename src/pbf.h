@@ -34,6 +34,7 @@ namespace HinaFlow
                 Cubic = 2,
             } kernel_type = KernelType::Poly6;
 
+            UT_Vector3 MaxBound;
             float kernel_radius = 0.04f;
             float epsilon = 0.00f;
             float viscosity = 0.01f;
@@ -45,6 +46,7 @@ namespace HinaFlow
         struct Result // Results
         {
             GU_Detail* gdp = nullptr; // required
+            bool done = false;
         };
 
         static void Advect(const Input& input, const Param& param, Result& result);

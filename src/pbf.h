@@ -34,7 +34,8 @@ namespace HinaFlow
                 Cubic = 2,
             } kernel_type = KernelType::Poly6;
 
-            UT_Vector3 MaxBound;
+            bool TopOpen = false;
+            UT_Vector3 HalfBound = {0.5f, 0.5f, 0.5f};
             float kernel_radius = 0.04f;
             float epsilon = 0.00f;
             float viscosity = 0.01f;
@@ -53,6 +54,7 @@ namespace HinaFlow
         static void SolvePressure(const Input& input, const Param& param, Result& result);
         static void SolvePressureMultiThreaded(const Input& input, const Param& param, Result& result);
         static void SolvePressureCUDA(const Input& input, const Param& param, Result& result);
+        static void UpdateVelocity(const Input& input, const Param& param, Result& result);
     };
 }
 

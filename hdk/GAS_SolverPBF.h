@@ -25,6 +25,7 @@ public:
     inline static const bool UNIQUE_DATANAME = false;
 
     GETSET_DATA_FUNCS_V3("MaxBound", MaxBound)
+    GETSET_DATA_FUNCS_B("TopOpen", TopOpen)
     GETSET_DATA_FUNCS_I("KernelType", KernelType)
     GETSET_DATA_FUNCS_F("KernelRadius", KernelRadius)
     GETSET_DATA_FUNCS_I("PressureIteration", PressureIteration)

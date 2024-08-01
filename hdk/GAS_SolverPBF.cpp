@@ -33,6 +33,7 @@ const SIM_DopDescription* GAS_SolverPBF::getDopDescription()
     PRMs.emplace_back(PRM_ORD, 1, &KernelTypeName, &KernelTypeNameDefault, &CLKernelType);
 
     PARAMETER_VECTOR_FLOAT_N(MaxBound, 3, 0.5, 0.5, 0.5)
+    PARAMETER_BOOL(TopOpen, true)
     PARAMETER_INT(PressureIteration, 20)
     PARAMETER_FLOAT(KernelRadius, 0.04)
     PARAMETER_FLOAT(Viscosity, 0.01)
@@ -68,7 +69,8 @@ bool GAS_SolverPBF::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Ti
 
     HinaFlow::PBF::Input input{&gdp, static_cast<float>(timestep)};
     HinaFlow::PBF::Param param;
-    param.MaxBound = getMaxBound();
+    param.HalfBound = getMaxBound() / 2.f;
+    param.TopOpen = getTopOpen();
     param.kernel_radius = static_cast<float>(getKernelRadius());
     param.epsilon = static_cast<float>(getEPS());
     param.viscosity = static_cast<float>(getViscosity());
@@ -89,17 +91,21 @@ bool GAS_SolverPBF::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Ti
     }
     HinaFlow::PBF::Result result{&gdp};
     GLOBAL_ATTRIBUTE_I(ExceedMaxIteration);
-    ExceedMaxIteration_handle.set(0, 0);
 
 
     HinaFlow::PBF::Advect(input, param, result);
-
     for (int _ = 0; _ < getPressureIteration(); ++_)
     {
         HinaFlow::PBF::SolvePressure(input, param, result);
         if (result.done)
+        {
+            HinaFlow::PBF::UpdateVelocity(input, param, result);
+            ExceedMaxIteration_handle.set(0, 0);
             return true;
+        }
     }
+
+    HinaFlow::PBF::UpdateVelocity(input, param, result);
     ExceedMaxIteration_handle.set(0, 1);
 
     return true;

@@ -23,8 +23,10 @@ void HinaFlow::PBF::Advect(const Input& input, const Param& param, Result& resul
     GA_RWHandleV3 p_handle = gdp.getP();
     POINT_ATTRIBUTE_V3(v)
 
+    temp.resize(gdp.getNumPoints());
     GA_FOR_ALL_PTOFF(&gdp, i)
     {
+        temp[gdp.pointIndex(i)] = p_handle.get(i);
         v_handle.set(i, v_handle.get(i) + UT_Vector3{0.f, param.gravity, 0.f} * input.dt);
         p_handle.set(i, p_handle.get(i) + v_handle.get(i) * input.dt);
     }
@@ -112,51 +114,23 @@ void HinaFlow::PBF::SolvePressure(const Input& input, const Param& param, Result
 
     // Enforce Boundary
     {
-        bool TOP_OPEN = true;
         GA_FOR_ALL_PTOFF(&gdp, i)
         {
             UT_Vector3 pos = p_handle.get(i);
-            UT_Vector3 vel = v_handle.get(i);
-            UT_Vector3 normal{0, 0, 0};
-            if (pos.x() > param.MaxBound.x())
-            {
-                pos.x() = param.MaxBound.x();
-                normal.x() += 1;
-            }
-            if (pos.x() < -param.MaxBound.x())
-            {
-                pos.x() = -param.MaxBound.x();
-                normal.x() -= 1;
-            }
-            if (!TOP_OPEN)
-            {
-                if (pos.y() > param.MaxBound.y())
-                {
-                    pos.y() = param.MaxBound.y();
-                    normal.y() += 1;
-                }
-            }
-            if (pos.y() < -param.MaxBound.y())
-            {
-                pos.y() = -param.MaxBound.y();
-                normal.y() -= 1;
-            }
-            if (pos.z() > param.MaxBound.z())
-            {
-                pos.z() = param.MaxBound.z();
-                normal.z() += 1;
-            }
-            if (pos.z() < -param.MaxBound.z())
-            {
-                pos.z() = -param.MaxBound.z();
-                normal.z() -= 1;
-            }
-            normal.normalize();
-            constexpr float c_f = 0.5f;
-            vel -= (1.f + c_f) * vel.dot(normal) * normal;
-
+            if (pos.x() > param.HalfBound.x())
+                pos.x() = param.HalfBound.x();
+            if (pos.x() < -param.HalfBound.x())
+                pos.x() = -param.HalfBound.x();
+            if (!param.TopOpen)
+                if (pos.y() > param.HalfBound.y())
+                    pos.y() = param.HalfBound.y();
+            if (pos.y() < -param.HalfBound.y())
+                pos.y() = -param.HalfBound.y();
+            if (pos.z() > param.HalfBound.z())
+                pos.z() = param.HalfBound.z();
+            if (pos.z() < -param.HalfBound.z())
+                pos.z() = -param.HalfBound.z();
             p_handle.set(i, pos);
-            v_handle.set(i, vel);
         }
     }
 
@@ -183,4 +157,17 @@ void HinaFlow::PBF::SolvePressureMultiThreaded(const Input& input, const Param& 
 
 void HinaFlow::PBF::SolvePressureCUDA(const Input& input, const Param& param, Result& result)
 {
+}
+
+void HinaFlow::PBF::UpdateVelocity(const Input& input, const Param& param, Result& result)
+{
+    GU_Detail& gdp = *input.gdp;
+    GA_Offset i;
+    GA_RWHandleV3 p_handle = gdp.getP();
+    POINT_ATTRIBUTE_V3(v)
+
+    GA_FOR_ALL_PTOFF(&gdp, i)
+    {
+        v_handle.set(i, (p_handle.get(i) - temp[gdp.pointIndex(i)]) / input.dt * (1 - param.viscosity));
+    }
 }

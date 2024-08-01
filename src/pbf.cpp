@@ -151,14 +151,6 @@ void HinaFlow::PBF::SolvePressure(const Input& input, const Param& param, Result
     }
 }
 
-void HinaFlow::PBF::SolvePressureMultiThreaded(const Input& input, const Param& param, Result& result)
-{
-}
-
-void HinaFlow::PBF::SolvePressureCUDA(const Input& input, const Param& param, Result& result)
-{
-}
-
 void HinaFlow::PBF::UpdateVelocity(const Input& input, const Param& param, Result& result)
 {
     GU_Detail& gdp = *input.gdp;

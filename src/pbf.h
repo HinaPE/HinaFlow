@@ -52,8 +52,6 @@ namespace HinaFlow
 
         static void Advect(const Input& input, const Param& param, Result& result);
         static void SolvePressure(const Input& input, const Param& param, Result& result);
-        static void SolvePressureMultiThreaded(const Input& input, const Param& param, Result& result);
-        static void SolvePressureCUDA(const Input& input, const Param& param, Result& result);
         static void UpdateVelocity(const Input& input, const Param& param, Result& result);
     };
 }

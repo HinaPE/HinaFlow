@@ -88,9 +88,8 @@ bool GAS_SolveDiffusion::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, S
         break;
     default:
         throw std::runtime_error("Invalid PCG_METHOD");
-        break;
     }
-    param.diffusion = float(getDiffusion());
+    param.diffusion = static_cast<float>(getDiffusion());
     HinaFlow::Diffusion::Result result{D, COLOR};
 
     if (getMultiThreaded())

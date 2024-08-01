@@ -24,6 +24,7 @@ public:
     inline static const char* DATANAME = "DebugSPHKernel";
     inline static const bool UNIQUE_DATANAME = false;
 
+    GETSET_DATA_FUNCS_I("KernelType", KernelType)
     GETSET_DATA_FUNCS_F("KernelRadius", KernelRadius)
 
 protected:

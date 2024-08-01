@@ -33,7 +33,7 @@ void HinaFlow::Possion::Solve(const Input& input, const Param& param, Result& re
             if (!CHECK_CELL_TYPE<CellType::Fluid>(input.MARKER, cell))
                 continue;
 
-            for (const int AXIS : (input.MARKER->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2}))
+            for (const int AXIS : input.MARKER->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2})
             {
                 for (const int DIR : {0, 1})
                 {
@@ -68,7 +68,7 @@ void HinaFlow::Possion::Solve(const Input& input, const Param& param, Result& re
             fpreal32 divergence = 0;
             if (CHECK_CELL_TYPE<CellType::Fluid>(input.MARKER, cell))
             {
-                for (const int AXIS : (input.MARKER->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2}))
+                for (const int AXIS : input.MARKER->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2})
                 {
                     constexpr int dir0 = 0, dir1 = 1;
                     const UT_Vector3I face0 = SIM::FieldUtils::cellToFaceMap(cell, AXIS, dir0);

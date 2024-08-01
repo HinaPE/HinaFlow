@@ -38,7 +38,7 @@ void HinaFlow::Diffusion::Solve(const Input& input, const Param& param, Result& 
 
             A.addToElement(idx, idx, 1.0f);
 
-            for (const int AXIS : (input.MARKER->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2}))
+            for (const int AXIS : input.MARKER->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2})
             {
                 for (const int DIR : {0, 1})
                 {
@@ -101,7 +101,7 @@ void HinaFlow::Diffusion::Solve(const Input& input, const Param& param, Result& 
 
     if (input.FIELDV && result.FIELDV)
     {
-        for (const int AXIS : (input.FIELDV->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2}))
+        for (const int AXIS : input.FIELDV->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2})
         {
             // Build b
             UT_VectorF b(0, size - 1);
@@ -257,7 +257,7 @@ void HinaFlow::Diffusion::SolveMultiThreaded(const Input& input, const Param& pa
 
     if (input.FIELDV && result.FIELDV)
     {
-        for (const int AXIS : (input.FIELDV->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2}))
+        for (const int AXIS : input.FIELDV->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2})
         {
             // Build b
             Internal::Diffusion::KnBuildRhs(b, input.FIELDV->getField(AXIS), input.MARKER);

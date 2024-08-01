@@ -94,7 +94,6 @@ bool GAS_SolvePoisson::solveGasSubclass(SIM_Engine&, SIM_Object* obj, SIM_Time, 
         break;
     default:
         throw std::runtime_error("Invalid PCG_METHOD");
-        break;
     }
     HinaFlow::Possion::Result result{V, PRS, DIV};
 

@@ -90,9 +90,8 @@ bool GAS_SolveWave::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Ti
         break;
     default:
         throw std::runtime_error("Invalid PCG_METHOD");
-        break;
     }
-    param.wave = float(getWave());
+    param.wave = static_cast<float>(getWave());
     HinaFlow::Wave::Result result{D};
 
     if (getMultiThreaded())

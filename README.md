@@ -28,6 +28,7 @@ HinaFlow is a recursive acronym for "**H**inaFlow **i**s **n**ot **a** **F**luid
 ### Papers
 - Stam, Jos. “Stable fluids.” Proceedings of the 26th annual conference on Computer graphics and interactive techniques (1999): n. pag.
 - Stam, Jos. “Real-Time Fluid Dynamics for Games.” (2003).
+- Macklin, Miles and Matthias Müller. “Position based fluids.” ACM Transactions on Graphics (TOG) 32 (2013): 1 - 12.
 - Gregson, James, Michael Krimerman, Matthias B. Hullin and Wolfgang Heidrich. “Stochastic tomography and its applications in 3D imaging of mixing fluids.” ACM Transactions on Graphics (TOG) 31 (2012): 1 - 10.
 
 

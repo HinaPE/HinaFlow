@@ -17,12 +17,11 @@
 void HinaFlow::PBF::Solve(const Input& input, const Param& param, Result& result)
 {
     GU_Detail& gdp = *input.gdp;
-    int64 size = gdp.getNumPoints();
-    Kernel::SetRadius(param.kernel_radius);
+    const int64 size = gdp.getNumPoints();
     POINT_ATTRIBUTE_V3(v)
     POINT_ATTRIBUTE_V3(a)
-    POINT_ATTRIBUTE_F(V)
     POINT_ATTRIBUTE_F(rho)
+    POINT_ATTRIBUTE_F(mass)
 
 
     // Build Neighbors
@@ -42,14 +41,14 @@ void HinaFlow::PBF::Solve(const Input& input, const Param& param, Result& result
             UT_Array<GA_Offset> neighbor_list;
             Searcher.getNeighbours(i, &gdp, neighbor_list);
 
-            fpreal density = 0;
+            float density = 0;
             for (int j = 0; j < neighbor_list.size(); ++j)
             {
                 UT_Vector3 pi = gdp.getPos3(i);
                 UT_Vector3 pj = gdp.getPos3(j);
-                fpreal Vi = V_handle.get(i);
-                fpreal Vj = V_handle.get(j);
-                density += Vj * Kernel::W(pi - pj);
+                float mi = mass_handle.get(i);
+                float mj = mass_handle.get(j);
+                density += mi * Poly6(pi - pj, param.kernel_radius);
             }
             rho_handle.set(i, density);
         }

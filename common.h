@@ -146,137 +146,55 @@ namespace HinaFlow
         return result;
     }
 
-
-    // @formatter:off
-    using float3 = UT_Vector3;
-    struct Cubic
+    inline static std::function Poly6 = [](const UT_Vector3& r, const float h) -> float
     {
-        inline static void SetRadius(float r) { _r = r; const float pi = 3.14159265358979323846f; const float h3 = _r * _r * _r; _k = 8.f / (pi * h3); _l = 48.f / (pi * h3); _W_0 = W(float3{0, 0, 0}); }
-        inline static float W(const float r) { float res = 0.f; const float q = r / _r; if (q <= 1.0) { if (q <= 0.5) { const float q2 = q * q; const float q3 = q2 * q; res = _k * (6.f * q3 - 6.f * q2 + 1.f); } else { res = _k * (2.f * pow(1.f - q, 3.f)); } } return res; }
-        inline static float W(const float3 &r) { return W(r.length()); }
-        inline static float3 gradW(const float3 &r) { float3 res; const float rl = r.length(); const float q = rl / _r; if ((rl > 1.0e-9) && (q <= 1.f)) { float3 gradq = r / rl; gradq /= _r; if (q <= 0.5) { res = _l * q * (3.f * q - 2.f) * gradq; } else { const float factor = 1.f - q; res = _l * (-factor * factor) * gradq; } } else res = float3{0, 0, 0}; return res; }
-        inline static float W_zero() { return _W_0; }
-        inline static float _r;
-        inline static float _k;
-        inline static float _l;
-        inline static float _W_0;
-    };
-    using Kernel = Cubic;
-    // @formatter:on
-
-    inline static std::function<float(const UT_Vector3&, const float)> Poly6 = [](const UT_Vector3& r, const float h) -> float
-    {
-        const float h2 = h * h;
-        const float h3 = h2 * h;
-        const float h4 = h2 * h2;
-        const float h5 = h2 * h3;
-        const float r2 = r.length2();
-        const float r1 = sqrt(r2);
-        const float q = r1 / h;
-        if (q > 1.0f)
-            return 0.0f;
-        const float q2 = q * q;
-        const float q3 = q2 * q;
-        const float q4 = q2 * q2;
-        const float q5 = q2 * q3;
-        const float factor = 315.0f / (64.0f * M_PI * h3);
-        return factor * (h2 - r2) * (h2 - r2) * (h2 - r2);
+        if (const float r_length = r.length(); r_length <= h)
+            return 315.0f / (64.0f * static_cast<float>(M_PI) * std::powf(h, 9)) * std::powf(h * h - r_length * r_length, 3);
+        return 0.0f;
     };
 
-    inline static std::function<UT_Vector3(const UT_Vector3&, const float)> gradPoly6 = [](const UT_Vector3& r, const float h) -> UT_Vector3
+    inline static std::function gradPoly6 = [](const UT_Vector3& r, const float h) -> UT_Vector3
     {
-        const float h2 = h * h;
-        const float h3 = h2 * h;
-        const float h4 = h2 * h2;
-        const float h5 = h2 * h3;
-        const float r2 = r.length2();
-        const float r1 = sqrt(r2);
-        const float q = r1 / h;
-        if (q > 1.0f)
-            return UT_Vector3(0.0f);
-        const float q2 = q * q;
-        const float q3 = q2 * q;
-        const float q4 = q2 * q2;
-        const float q5 = q2 * q3;
-        const float factor = 945.0f / (32.0f * M_PI * h5);
-        return factor * r * (h2 - r2) * (h2 - r2);
+        if (const float r_length = r.length(); r_length <= h)
+            return -945.0f / (32.0f * static_cast<float>(M_PI) * std::powf(h, 9)) * std::powf(h * h - r_length * r_length, 2) * r;
+        return {0.0f, 0.0f, 0.0f};
     };
 
-    inline static std::function<float(const UT_Vector3&, const float)> Spiky = [](const UT_Vector3& r, const float h) -> float
+    inline static std::function Spiky = [](const UT_Vector3& r, const float h) -> float
     {
-        const float h2 = h * h;
-        const float h3 = h2 * h;
-        const float h4 = h2 * h2;
-        const float h5 = h2 * h3;
-        const float r2 = r.length2();
-        const float r1 = sqrt(r2);
-        const float q = r1 / h;
-        if (q > 1.0f)
-            return 0.0f;
-        const float q2 = q * q;
-        const float q3 = q2 * q;
-        const float q4 = q2 * q2;
-        const float q5 = q2 * q3;
-        const float factor = 15.0f / (M_PI * h3);
-        const float factor2 = 45.0f / (M_PI * h4);
-        return factor * (h - r1) * (h - r1) * (h - r1) * q3;
+        if (const float r_length = r.length(); r_length <= h)
+            return 15.0f / (static_cast<float>(M_PI) * std::powf(h, 6)) * std::powf(h - r_length, 3);
+        return 0.0f;
     };
 
-    inline static std::function<UT_Vector3(const UT_Vector3&, const float)> gradSpiky = [](const UT_Vector3& r, const float h) -> UT_Vector3
+    inline static std::function gradSpiky = [](const UT_Vector3& r, const float h) -> UT_Vector3
     {
-        const float h2 = h * h;
-        const float h3 = h2 * h;
-        const float h4 = h2 * h2;
-        const float h5 = h2 * h3;
-        const float r2 = r.length2();
-        const float r1 = sqrt(r2);
-        const float q = r1 / h;
-        if (q > 1.0f)
-            return UT_Vector3(0.0f);
-        const float q2 = q * q;
-        const float q3 = q2 * q;
-        const float q4 = q2 * q2;
-        const float q5 = q2 * q3;
-        const float factor = 45.0f / (M_PI * h4);
-        return factor * (h - r1) * (h - r1) * r / r1 * q2;
+        if (const float r_length = r.length(); r_length <= h)
+            return -45.0f / (static_cast<float>(M_PI) * std::powf(h, 6)) * std::powf((h - r_length), 2) * r / r_length;
+        return {0.0f, 0.0f, 0.0f};
     };
 
-    inline static std::function<float(const UT_Vector3&, const float)> Cubic = [](const UT_Vector3& r, const float h) -> float
+    inline static std::function Cubic = [](const UT_Vector3& r, const float h) -> float
     {
-        const float h2 = h * h;
-        const float h3 = h2 * h;
-        const float h4 = h2 * h2;
-        const float h5 = h2 * h3;
-        const float r2 = r.length2();
-        const float r1 = sqrt(r2);
-        const float q = r1 / h;
-        if (q > 1.0f)
-            return 0.0f;
-        const float q2 = q * q;
-        const float q3 = q2 * q;
-        const float q4 = q2 * q2;
-        const float q5 = q2 * q3;
-        const float factor = 8.0f / (M_PI * h3);
-        return factor * (1.0f - q) * (1.0f - q) * (1.0f - q);
+        const float q = r.length() / h;
+
+        if (0 < q && q < 1)
+            return 1.0f / (static_cast<float>(M_PI) * h * h * h) * (1.0f - 1.5f * q * q + 0.75f * q * q * q);
+        if (1 < q && q < 2)
+            return 1.0f / (static_cast<float>(M_PI) * h * h * h) * 0.25f * std::powf(2.0f - q, 3);
+        return 0.0f;
     };
 
-    inline static std::function<UT_Vector3(const UT_Vector3&, const float)> gradCubic = [](const UT_Vector3& r, const float h) -> UT_Vector3
+    inline static std::function gradCubic = [](const UT_Vector3& r, const float h) -> UT_Vector3
     {
-        const float h2 = h * h;
-        const float h3 = h2 * h;
-        const float h4 = h2 * h2;
-        const float h5 = h2 * h3;
-        const float r2 = r.length2();
-        const float r1 = sqrt(r2);
-        const float q = r1 / h;
-        if (q > 1.0f)
-            return UT_Vector3(0.0f);
-        const float q2 = q * q;
-        const float q3 = q2 * q;
-        const float q4 = q2 * q2;
-        const float q5 = q2 * q3;
-        const float factor = 24.0f / (M_PI * h4);
-        return factor * r / r1 * (1.0f - q) * (1.0f - q);
+        const float q = r.length() / h;
+
+        if (0 < q && q < 1)
+            return 1.0f / (static_cast<float>(M_PI) * h * h * h) * (-3.0f * q + 2.25f * q * q) * r / r.length();
+        if (1 < q && q < 2)
+            return 1.0f / (static_cast<float>(M_PI) * h * h * h) * (-0.75f * std::pow(2.0f - q, 2)) * r / r.length();
+
+        return {0.0f, 0.0f, 0.0f};
     };
 }
 

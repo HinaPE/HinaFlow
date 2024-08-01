@@ -38,7 +38,7 @@ void HinaFlow::Wave::Solve(const Input& input, const Param& param, Result& resul
 
             A.addToElement(idx, idx, 1.0f);
 
-            for (const int AXIS : (input.MARKER->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2}))
+            for (const int AXIS : input.MARKER->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2})
             {
                 for (const int DIR : {0, 1})
                 {

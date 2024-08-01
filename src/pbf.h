@@ -27,10 +27,19 @@ namespace HinaFlow
 
         struct Param
         {
+            enum class KernelType : unsigned char
+            {
+                Poly6 = 0,
+                Spiky = 1,
+                Cubic = 2,
+            } kernel_type = KernelType::Poly6;
+
             float kernel_radius = 0.04f;
+            float epsilon = 0.00f;
             float viscosity = 0.01f;
             float gravity = -9.8f;
             float rest_density = 1000.f;
+            float dpscale = 1.f;
         };
 
         struct Result // Results
@@ -38,9 +47,10 @@ namespace HinaFlow
             GU_Detail* gdp = nullptr; // required
         };
 
-        static void Solve(const Input& input, const Param& param, Result& result);
-        static void SolveMultiThreaded(const Input& input, const Param& param, Result& result);
-        static void SolveCUDA(const Input& input, const Param& param, Result& result);
+        static void Advect(const Input& input, const Param& param, Result& result);
+        static void SolvePressure(const Input& input, const Param& param, Result& result);
+        static void SolvePressureMultiThreaded(const Input& input, const Param& param, Result& result);
+        static void SolvePressureCUDA(const Input& input, const Param& param, Result& result);
     };
 }
 

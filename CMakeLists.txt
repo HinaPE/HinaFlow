@@ -19,6 +19,7 @@ set(DOP_NODEs
         DebugSPHKernel
         SolveDiffusion
         SolvePoisson
+        SolverPBF
         SolveWave
 )
 set(SOP_NODEs

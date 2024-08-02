@@ -281,3 +281,7 @@ void HinaFlow::Possion::SolveMultiThreaded(const Input& input, const Param& para
     for (const int AXIS : (input.FLOW->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2}))
         Internal::Possion::KnSubtractPressureGradient(result.FLOW, result.PRESSURE, AXIS);
 }
+
+void HinaFlow::Possion::SolveDifferential(const Input& input, const Param& param, Result& result) { Solve(input, param, result); }
+
+void HinaFlow::Possion::SolveDifferentialMultiThreaded(const Input& input, const Param& param, Result& result) { SolveMultiThreaded(input, param, result); }

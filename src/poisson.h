@@ -41,6 +41,9 @@ namespace HinaFlow
 
         static void Solve(const Input& input, const Param& param, Result& result);
         static void SolveMultiThreaded(const Input& input, const Param& param, Result& result);
+
+        static void SolveDifferential(const Input& input, const Param& param, Result& result);
+        static void SolveDifferentialMultiThreaded(const Input& input, const Param& param, Result& result);
     };
 }
 

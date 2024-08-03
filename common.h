@@ -112,22 +112,44 @@ namespace HinaFlow
     template <CellType TYPE>
     bool CHECK_CELL_TYPE(const SIM_IndexField* MARKERS, const UT_Vector3I cell) { return SIM::FieldUtils::getFieldValue(*MARKERS->getField(), cell) == static_cast<exint>(TYPE); }
 
-    template <typename FieldType, typename T>
-    void FILL_FIELD(FieldType* FIELD, T value)
-    {
-        if constexpr (std::is_same_v<T, SIM_VectorField*>)
-            for (const int AXIS : FIELD->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2})
-                FIELD->getField(AXIS)->makeConstant(value);
-        else
-            FIELD->getField()->makeConstant(value);
-    }
-
     template <typename T>
     T TO_1D_IDX(const UT_Vector3T<T>& idx, const UT_Vector3T<T>& res) { return idx.x() + res.x() * (idx.y() + res.y() * idx.z()); }
 
     template <typename T>
     T TO_1D_IDX(const UT_Vector2T<T>& idx, const UT_Vector2T<T>& res) { return idx.x() + res.x() * idx.y(); }
 
+    template <typename FieldType>
+    std::vector<int> GET_AXIS_ITER(const FieldType* FIELD)
+    {
+        std::vector<int> res;
+        int xres, yres, zres;
+        FIELD->getVoxelRes(xres, yres, zres);
+        if (xres > 1) res.push_back(0);
+        if (yres > 1) res.push_back(1);
+        if (zres > 1) res.push_back(2);
+        return res;
+    }
+
+    inline static std::vector<int> GET_AXIS_ITER(const SIM_VectorField* FIELD)
+    {
+        std::vector<int> res;
+        auto _ = FIELD->getTotalVoxelRes();
+        int xres = _.x(), yres = _.y(), zres = _.z();
+        if (xres > 1) res.push_back(0);
+        if (yres > 1) res.push_back(1);
+        if (zres > 1) res.push_back(2);
+        return res;
+    }
+
+    template <typename FieldType, typename T>
+    void FILL_FIELD(FieldType* FIELD, T value)
+    {
+        if constexpr (std::is_same_v<T, SIM_VectorField*>)
+            for (const int AXIS : GET_AXIS_ITER(FIELD))
+                FIELD->getField(AXIS)->makeConstant(value);
+        else
+            FIELD->getField()->makeConstant(value);
+    }
 
     template <typename T>
     UT_Vector3T<T> TO_3D_IDX(const T idx, const UT_Vector3T<T>& res)

@@ -109,7 +109,7 @@ bool GAS_DebugSPHKernel::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, S
         return true;
 
     F->getField()->makeConstant(0);
-    for (const int AXIS : V->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2})
+    for (const int AXIS : HinaFlow::GET_AXIS_ITER(V))
         V->getField(AXIS)->makeConstant(0);
 
     GA_Offset pt_off;
@@ -119,17 +119,17 @@ bool GAS_DebugSPHKernel::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, S
         {
         case 0:
             HinaFlow::Internal::KnContributeSPHWeight(F, HinaFlow::Poly6, gdp.getPos3(pt_off), static_cast<float>(getKernelRadius()));
-            for (const int AXIS : V->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2})
+            for (const int AXIS : HinaFlow::GET_AXIS_ITER(V))
                 HinaFlow::Internal::KnContributeSPHWeightGrad(V, HinaFlow::gradPoly6, gdp.getPos3(pt_off), static_cast<float>(getKernelRadius()), AXIS);
             break;
         case 1:
             HinaFlow::Internal::KnContributeSPHWeight(F, HinaFlow::Spiky, gdp.getPos3(pt_off), static_cast<float>(getKernelRadius()));
-            for (const int AXIS : V->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2})
+            for (const int AXIS : HinaFlow::GET_AXIS_ITER(V))
                 HinaFlow::Internal::KnContributeSPHWeightGrad(V, HinaFlow::gradSpiky, gdp.getPos3(pt_off), static_cast<float>(getKernelRadius()), AXIS);
             break;
         case 2:
             HinaFlow::Internal::KnContributeSPHWeight(F, HinaFlow::Cubic, gdp.getPos3(pt_off), static_cast<float>(getKernelRadius()));
-            for (const int AXIS : V->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2})
+            for (const int AXIS : HinaFlow::GET_AXIS_ITER(V))
                 HinaFlow::Internal::KnContributeSPHWeightGrad(V, HinaFlow::gradCubic, gdp.getPos3(pt_off), static_cast<float>(getKernelRadius()), AXIS);
             break;
         default:

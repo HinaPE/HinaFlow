@@ -33,7 +33,7 @@ void HinaFlow::Possion::Solve(const Input& input, const Param& param, Result& re
             if (!CHECK_CELL_TYPE<CellType::Fluid>(input.MARKER, cell))
                 continue;
 
-            for (const int AXIS : input.MARKER->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2})
+            for (const int AXIS : GET_AXIS_ITER(input.MARKER->getField()))
             {
                 for (const int DIR : {0, 1})
                 {
@@ -68,7 +68,7 @@ void HinaFlow::Possion::Solve(const Input& input, const Param& param, Result& re
             fpreal32 divergence = 0;
             if (CHECK_CELL_TYPE<CellType::Fluid>(input.MARKER, cell))
             {
-                for (const int AXIS : input.MARKER->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2})
+                for (const int AXIS : GET_AXIS_ITER(input.MARKER->getField()))
                 {
                     constexpr int dir0 = 0, dir1 = 1;
                     const UT_Vector3I face0 = SIM::FieldUtils::cellToFaceMap(cell, AXIS, dir0);
@@ -105,7 +105,7 @@ void HinaFlow::Possion::Solve(const Input& input, const Param& param, Result& re
 
 
     // Subtract Pressure Gradient
-    for (const int AXIS : (input.FLOW->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2}))
+    for (const int AXIS : GET_AXIS_ITER(input.FLOW))
     {
         UT_VoxelArrayIteratorF vit;
         vit.setArray(result.FLOW->getField(AXIS)->fieldNC());
@@ -145,7 +145,7 @@ namespace HinaFlow::Internal::Possion
             if (!CHECK_CELL_TYPE<CellType::Fluid>(MARKER, cell))
                 continue;
 
-            for (const int AXIS : (MARKER->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2}))
+            for (const int AXIS : GET_AXIS_ITER(MARKER->getField()))
             {
                 for (const int DIR : {0, 1})
                 {
@@ -183,7 +183,7 @@ namespace HinaFlow::Internal::Possion
             fpreal32 divergence = 0;
             if (CHECK_CELL_TYPE<CellType::Fluid>(MARKER, cell))
             {
-                for (const int AXIS : (MARKER->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2}))
+                for (const int AXIS : GET_AXIS_ITER(MARKER->getField()))
                 {
                     constexpr int dir0 = 0, dir1 = 1;
                     const UT_Vector3I face0 = SIM::FieldUtils::cellToFaceMap(cell, AXIS, dir0);
@@ -278,7 +278,7 @@ void HinaFlow::Possion::SolveMultiThreaded(const Input& input, const Param& para
 
 
     // Subtract Pressure Gradient
-    for (const int AXIS : (input.FLOW->getTwoDField() ? std::vector{0, 1} : std::vector{0, 1, 2}))
+    for (const int AXIS : GET_AXIS_ITER(input.FLOW))
         Internal::Possion::KnSubtractPressureGradient(result.FLOW, result.PRESSURE, AXIS);
 }
 

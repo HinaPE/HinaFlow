@@ -13,6 +13,9 @@
 
 
 #include "common.h"
+#include "poisson.h"
+
+std::array<SIM_RawField, 3> HinaFlow::FLIP::FLOW_CACHE;
 
 namespace HinaFlow::Internal::FLIP
 {
@@ -98,6 +101,30 @@ namespace HinaFlow::Internal::FLIP
     }
 
     THREADED_METHOD4(, EX_INDEX->shouldMultiThread(), KnExtrapolate, SIM_RawField*, FIELD, const SIM_RawIndexField*, EX_INDEX, const int, distance, const int, AXIS);
+
+
+    void KnBuildMarkerPartial(SIM_IndexField* MARKER, const SIM_VectorField* FLOW, const UT_JobInfo& info)
+    {
+        UT_VoxelArrayIteratorI vit;
+        vit.setArray(MARKER->getField()->fieldNC());
+        vit.setCompressOnExit(true);
+        vit.setPartialRange(info.job(), info.numJobs());
+
+        for (vit.rewind(); !vit.atEnd(); vit.advance())
+        {
+            if (FLOW->getCellValue(vit.x(), vit.y(), vit.z()).length2() > 0)
+                vit.setValue(static_cast<exint>(CellType::Fluid));
+            else
+                vit.setValue(static_cast<exint>(CellType::Empty));
+        }
+    }
+
+    THREADED_METHOD2(, MARKER->getField()->shouldMultiThread(), KnBuildMarker, SIM_IndexField*, MARKER, const SIM_VectorField*, FLOW);
+
+    static void BuildMarker(SIM_IndexField* MARKER, const SIM_VectorField* FLOW)
+    {
+        KnBuildMarker(MARKER, FLOW);
+    }
 
     static void BuildMarker(SIM_IndexField* MARKER, const GU_Detail* gdp)
     {
@@ -307,11 +334,41 @@ namespace HinaFlow::Internal::FLIP
 
 void HinaFlow::FLIP::P2G(const Input& input, const Param& param, Result& result)
 {
+    for (const int i : GET_AXIS_ITER(input.FLOW))
+        FLOW_CACHE[i] = SIM_RawField(*input.FLOW->getField(i));
     Internal::FLIP::BuildWeight(result.WEIGHT, input.FLOW, input.gdp);
-    // Internal::FLIP::BuildMarker(input.MARKER, input.gdp);
-    // Internal::FLIP::Extrapolate(input.FLOW, input.MARKER, result.EX_INDEX, param.extrapolate_depth);
+    Internal::FLIP::BuildMarker(input.MARKER, input.gdp);
+    Internal::FLIP::Extrapolate(input.FLOW, input.MARKER, result.EX_INDEX, param.extrapolate_depth);
+}
+
+void HinaFlow::FLIP::SolvePressure(const Input& input, const Param& param, Result& result)
+{
+    Internal::FLIP::BuildMarker(input.MARKER, input.FLOW);
+    input.FLOW->enforceBoundary();
+    Possion::Input I{input.FLOW, input.MARKER};
+    Possion::Param P;
+    Possion::Result R{input.FLOW, result.PRESSURE, result.DIVERGENCE};
+    Possion::SolveMultiThreaded(I, P, R);
+    input.FLOW->enforceBoundary();
 }
 
 void HinaFlow::FLIP::G2P(const Input& input, const Param& param, Result& result)
 {
+    Internal::FLIP::Extrapolate(input.FLOW, input.MARKER, result.EX_INDEX, param.extrapolate_depth);
+
+    GU_Detail& gdp = *input.gdp;
+    POINT_ATTRIBUTE_V3(v)
+    GA_Offset pt_off;
+    GA_FOR_ALL_PTOFF(input.gdp, pt_off)
+    {
+        const UT_Vector3 pos = gdp.getPos3(pt_off);
+        UT_Vector3 v = input.FLOW->getValue(pos);
+        UT_Vector3 delta = v - UT_Vector3F{
+            static_cast<float>(FLOW_CACHE[0].getValue(pos)),
+            static_cast<float>(FLOW_CACHE[1].getValue(pos)),
+            static_cast<float>(FLOW_CACHE[2].getValue(pos))
+        };
+        UT_Vector3 vel = v_handle.get(pt_off);
+        vel = param.ratio * (vel + delta) + (1 - param.ratio) * v;
+    }
 }

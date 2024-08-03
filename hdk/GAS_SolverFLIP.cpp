@@ -14,6 +14,7 @@
 
 #include "common.h"
 #include "src/flip.h"
+#include "src/poisson.h"
 
 const SIM_DopDescription* GAS_SolverFLIP::getDopDescription()
 {
@@ -82,6 +83,7 @@ bool GAS_SolverFLIP::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_T
     HinaFlow::FLIP::Param param;
     HinaFlow::FLIP::Result result{WEIGHT, PRS, DIV, EX_INDEX};
     HinaFlow::FLIP::P2G(input, param, result);
+    HinaFlow::FLIP::SolvePressure(input, param, result);
     HinaFlow::FLIP::G2P(input, param, result);
 
     return true;

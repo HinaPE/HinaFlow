@@ -30,7 +30,8 @@ namespace HinaFlow
 
         struct Param
         {
-            int extrapolate_depth = 6; // optional
+            int extrapolate_depth = 6;
+            float ratio = 0.97f;
         };
 
         struct Result // Results
@@ -43,7 +44,10 @@ namespace HinaFlow
 
 
         static void P2G(const Input& input, const Param& param, Result& result);
+        static void SolvePressure(const Input& input, const Param& param, Result& result);
         static void G2P(const Input& input, const Param& param, Result& result);
+
+        static std::array<SIM_RawField, 3> FLOW_CACHE;
     };
 }
 

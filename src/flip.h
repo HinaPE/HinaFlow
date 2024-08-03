@@ -35,6 +35,9 @@ namespace HinaFlow
 
         struct Result // Results
         {
+            SIM_VectorField* WEIGHT = nullptr; // required
+            SIM_ScalarField* PRESSURE = nullptr; // required
+            SIM_ScalarField* DIVERGENCE = nullptr; // optional
             SIM_IndexField* EX_INDEX = nullptr; // optional
         };
 

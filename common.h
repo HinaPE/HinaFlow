@@ -64,6 +64,9 @@
 #define ACTIVATE_GAS_FIELDSOURCE static PRM_Name FieldSourceName(GAS_NAME_FIELDSOURCE, "FieldSource"); static PRM_Default FieldSourceNameDefault(0, GAS_NAME_FIELDSOURCE); PRMs.emplace_back(PRM_STRING, 1, &FieldSourceName, &FieldSourceNameDefault);
 #define ACTIVATE_GAS_COLLISION static PRM_Name CollisionName(GAS_NAME_COLLISION, "Collision"); static PRM_Default CollisionNameDefault(0, GAS_NAME_COLLISION); PRMs.emplace_back(PRM_STRING, 1, &CollisionName, &CollisionNameDefault);
 
+#define GAS_NAME_WEIGHT "weight"
+#define ACTIVATE_GAS_WEIGHT static PRM_Name WeightName(GAS_NAME_WEIGHT, "Weight"); static PRM_Default WeightNameDefault(0, GAS_NAME_WEIGHT); PRMs.emplace_back(PRM_STRING, 1, &WeightName, &WeightNameDefault);
+
 #define GAS_NAME_EXTRAPOLATION "extrapolation"
 #define ACTIVATE_GAS_EXTRAPOLATION static PRM_Name ExtrapolationName(GAS_NAME_EXTRAPOLATION, "Extrapolation"); static PRM_Default ExtrapolationNameDefault(0, GAS_NAME_EXTRAPOLATION); PRMs.emplace_back(PRM_STRING, 1, &ExtrapolationName, &ExtrapolationNameDefault);
 

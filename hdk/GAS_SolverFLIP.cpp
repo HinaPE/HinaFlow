@@ -25,6 +25,7 @@ const SIM_DopDescription* GAS_SolverFLIP::getDopDescription()
     ACTIVATE_GAS_PRESSURE
     ACTIVATE_GAS_STENCIL
     ACTIVATE_GAS_EXTRAPOLATION
+    ACTIVATE_GAS_WEIGHT
     PRMs.emplace_back();
 
     static SIM_DopDescription DESC(GEN_NODE,
@@ -46,6 +47,7 @@ bool GAS_SolverFLIP::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_T
     SIM_ScalarField* PRS = getScalarField(obj, GAS_NAME_PRESSURE); // required
     SIM_IndexField* MARKER = getIndexField(obj, GAS_NAME_STENCIL); // required
     SIM_IndexField* EX_INDEX = getIndexField(obj, GAS_NAME_EXTRAPOLATION); // optional
+    SIM_VectorField* WEIGHT = getVectorField(obj, GAS_NAME_WEIGHT); // required
 
     if (!HinaFlow::CHECK_NOT_NULL(G, V, PRS, MARKER))
     {
@@ -78,7 +80,7 @@ bool GAS_SolverFLIP::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_T
 
     HinaFlow::FLIP::Input input{&gdp, V, MARKER};
     HinaFlow::FLIP::Param param;
-    HinaFlow::FLIP::Result result{EX_INDEX};
+    HinaFlow::FLIP::Result result{WEIGHT, PRS, DIV, EX_INDEX};
     HinaFlow::FLIP::P2G(input, param, result);
     HinaFlow::FLIP::G2P(input, param, result);
 

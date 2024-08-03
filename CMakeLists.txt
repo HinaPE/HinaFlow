@@ -4,11 +4,11 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreadedDLL)
 set(CMAKE_CXX_STANDARD 17)
 project(HinaFlow)
 
-# Find Houdini
 include(./FindHoudini.cmake)
 
 set(SRC_FILES
         diffusion
+        flip
         image
         pbf
         poisson
@@ -19,6 +19,7 @@ set(DOP_NODEs
         DebugSPHKernel
         SolveDiffusion
         SolvePoisson
+        SolverFLIP
         SolverPBF
         SolveWave
 )

@@ -13,20 +13,29 @@
  ******************************************************************************/
 
 
+#include <GU/GU_Detail.h>
+#include <SIM/SIM_VectorField.h>
+#include <SIM/SIM_IndexField.h>
+
 namespace HinaFlow
 {
     struct FLIP
     {
         struct Input
         {
+            GU_Detail* gdp = nullptr; // required
+            SIM_VectorField* FLOW = nullptr; // required
+            SIM_IndexField* MARKER = nullptr; // required
         };
 
         struct Param
         {
+            int extrapolate_depth = 6; // optional
         };
 
         struct Result // Results
         {
+            SIM_IndexField* EX_INDEX = nullptr; // optional
         };
 
 

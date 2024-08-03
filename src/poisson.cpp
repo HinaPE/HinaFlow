@@ -116,9 +116,9 @@ void HinaFlow::Possion::Solve(const Input& input, const Param& param, Result& re
             const UT_Vector3I cell0 = SIM::FieldUtils::faceToCellMap(face, AXIS, DIR_0);
             const UT_Vector3I cell1 = SIM::FieldUtils::faceToCellMap(face, AXIS, DIR_1);
             // This will clamp the bounds to fit within the voxel array, using the border type to resolve out of range values.
-            const fpreal32 p0 = result.PRESSURE->getField()->field()->getValue(int(cell0.x()), int(cell0.y()), int(cell0.z()));
+            const fpreal32 p0 = result.PRESSURE->getField()->field()->getValue(static_cast<int>(cell0.x()), static_cast<int>(cell0.y()), static_cast<int>(cell0.z()));
             // This will clamp the bounds to fit within the voxel array, using the border type to resolve out of range values.
-            const fpreal32 p1 = result.PRESSURE->getField()->field()->getValue(int(cell1.x()), int(cell1.y()), int(cell1.z()));
+            const fpreal32 p1 = result.PRESSURE->getField()->field()->getValue(static_cast<int>(cell1.x()), static_cast<int>(cell1.y()), static_cast<int>(cell1.z()));
             fpreal32 v = input.FLOW->getField(AXIS)->field()->getValue(vit.x(), vit.y(), vit.z());
             v -= (p1 - p0) / h;
             vit.setValue(v);
@@ -141,7 +141,7 @@ namespace HinaFlow::Internal::Possion
         for (vit.rewind(); !vit.atEnd(); vit.advance())
         {
             const UT_Vector3I cell(vit.x(), vit.y(), vit.z());
-            int idx = static_cast<int>(TO_1D_IDX(cell, res));
+            const int idx = static_cast<int>(TO_1D_IDX(cell, res));
             if (!CHECK_CELL_TYPE<CellType::Fluid>(MARKER, cell))
                 continue;
 
@@ -150,7 +150,7 @@ namespace HinaFlow::Internal::Possion
                 for (const int DIR : {0, 1})
                 {
                     UT_Vector3I cell0 = SIM::FieldUtils::cellToCellMap(cell, AXIS, DIR);
-                    int idx0 = static_cast<int>(TO_1D_IDX(cell0, res));
+                    const int idx0 = static_cast<int>(TO_1D_IDX(cell0, res));
 
                     if (CHECK_CELL_VALID(MARKER->getField(), cell0))
                     {
@@ -237,9 +237,9 @@ namespace HinaFlow::Internal::Possion
             const UT_Vector3I cell0 = SIM::FieldUtils::faceToCellMap(face, AXIS, DIR_0);
             const UT_Vector3I cell1 = SIM::FieldUtils::faceToCellMap(face, AXIS, DIR_1);
             // This will clamp the bounds to fit within the voxel array, using the border type to resolve out of range values.
-            const fpreal32 p0 = PRESSURE->getField()->field()->getValue(int(cell0.x()), int(cell0.y()), int(cell0.z()));
+            const fpreal32 p0 = PRESSURE->getField()->field()->getValue(static_cast<int>(cell0.x()), static_cast<int>(cell0.y()), static_cast<int>(cell0.z()));
             // This will clamp the bounds to fit within the voxel array, using the border type to resolve out of range values.
-            const fpreal32 p1 = PRESSURE->getField()->field()->getValue(int(cell1.x()), int(cell1.y()), int(cell1.z()));
+            const fpreal32 p1 = PRESSURE->getField()->field()->getValue(static_cast<int>(cell1.x()), static_cast<int>(cell1.y()), static_cast<int>(cell1.z()));
             fpreal32 v = FLOW->getField(AXIS)->field()->getValue(vit.x(), vit.y(), vit.z());
             v -= (p1 - p0) / h;
             vit.setValue(v);

@@ -64,6 +64,9 @@
 #define ACTIVATE_GAS_FIELDSOURCE static PRM_Name FieldSourceName(GAS_NAME_FIELDSOURCE, "FieldSource"); static PRM_Default FieldSourceNameDefault(0, GAS_NAME_FIELDSOURCE); PRMs.emplace_back(PRM_STRING, 1, &FieldSourceName, &FieldSourceNameDefault);
 #define ACTIVATE_GAS_COLLISION static PRM_Name CollisionName(GAS_NAME_COLLISION, "Collision"); static PRM_Default CollisionNameDefault(0, GAS_NAME_COLLISION); PRMs.emplace_back(PRM_STRING, 1, &CollisionName, &CollisionNameDefault);
 
+#define GAS_NAME_EXTRAPOLATION "extrapolation"
+#define ACTIVATE_GAS_EXTRAPOLATION static PRM_Name ExtrapolationName(GAS_NAME_EXTRAPOLATION, "Extrapolation"); static PRM_Default ExtrapolationNameDefault(0, GAS_NAME_EXTRAPOLATION); PRMs.emplace_back(PRM_STRING, 1, &ExtrapolationName, &ExtrapolationNameDefault);
+
 #define GAS_NAME_COLOR "color"
 #define ACTIVATE_GAS_COLOR static PRM_Name ColorName(GAS_NAME_COLOR, "Color"); static PRM_Default ColorNameDefault(0, GAS_NAME_COLOR); PRMs.emplace_back(PRM_STRING, 1, &ColorName, &ColorNameDefault);
 
@@ -82,11 +85,11 @@ namespace HinaFlow
 {
     enum class CellType : unsigned char
     {
-        Empty = 0,
         Fluid = 1,
         Solid = 2,
         Inflow = 3,
         Outflow = 4,
+        Empty = 5,
     };
 
     template <typename... Args>
@@ -100,6 +103,13 @@ namespace HinaFlow
     }
 
     template <typename FieldType>
+    bool CHECK_IS_CELL_SAMPLED(FieldType arg)
+    {
+        if constexpr (std::is_same_v<FieldType, SIM_VectorField*>) { return arg->isCenterSampled(); }
+        return true;
+    }
+
+    template <typename FieldType>
     bool CHECK_IS_FACE_SAMPLED(FieldType arg)
     {
         if constexpr (std::is_same_v<FieldType, SIM_VectorField*>) { return arg->isFaceSampled(); }
@@ -107,7 +117,7 @@ namespace HinaFlow
     }
 
     template <typename FieldType>
-    bool CHECK_CELL_VALID(const FieldType* FIELD, const UT_Vector3I& cell) { return FIELD->field()->isValidIndex(int(cell.x()), int(cell.y()), int(cell.z())); }
+    bool CHECK_CELL_VALID(const FieldType* FIELD, const UT_Vector3I& cell) { return FIELD->field()->isValidIndex(static_cast<int>(cell.x()), static_cast<int>(cell.y()), static_cast<int>(cell.z())); }
 
     template <CellType TYPE>
     bool CHECK_CELL_TYPE(const SIM_IndexField* MARKERS, const UT_Vector3I cell) { return SIM::FieldUtils::getFieldValue(*MARKERS->getField(), cell) == static_cast<exint>(TYPE); }
@@ -134,7 +144,7 @@ namespace HinaFlow
     {
         std::vector<int> res;
         auto _ = FIELD->getTotalVoxelRes();
-        int xres = _.x(), yres = _.y(), zres = _.z();
+        int xres = static_cast<int>(_.x()), yres = static_cast<int>(_.y()), zres = static_cast<int>(_.z());
         if (xres > 1) res.push_back(0);
         if (yres > 1) res.push_back(1);
         if (zres > 1) res.push_back(2);

@@ -24,6 +24,7 @@ const SIM_DopDescription* GAS_SolverFLIP::getDopDescription()
     ACTIVATE_GAS_DIVERGENCE
     ACTIVATE_GAS_PRESSURE
     ACTIVATE_GAS_STENCIL
+    ACTIVATE_GAS_EXTRAPOLATION
     PRMs.emplace_back();
 
     static SIM_DopDescription DESC(GEN_NODE,
@@ -39,11 +40,12 @@ const SIM_DopDescription* GAS_SolverFLIP::getDopDescription()
 
 bool GAS_SolverFLIP::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep)
 {
-    SIM_GeometryCopy* G = getGeometryCopy(obj, GAS_NAME_GEOMETRY);
+    SIM_GeometryCopy* G = getGeometryCopy(obj, GAS_NAME_GEOMETRY); // required
     SIM_VectorField* V = getVectorField(obj, GAS_NAME_VELOCITY); // required
     SIM_ScalarField* DIV = getScalarField(obj, GAS_NAME_DIVERGENCE); // optional
     SIM_ScalarField* PRS = getScalarField(obj, GAS_NAME_PRESSURE); // required
     SIM_IndexField* MARKER = getIndexField(obj, GAS_NAME_STENCIL); // required
+    SIM_IndexField* EX_INDEX = getIndexField(obj, GAS_NAME_EXTRAPOLATION); // optional
 
     if (!HinaFlow::CHECK_NOT_NULL(G, V, PRS, MARKER))
     {
@@ -57,11 +59,28 @@ bool GAS_SolverFLIP::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_T
         return false;
     }
 
+    if (!HinaFlow::CHECK_IS_CELL_SAMPLED(MARKER))
+    {
+        addError(obj, SIM_MESSAGE, "Marker field is not cell sampled", UT_ERROR_FATAL);
+        return false;
+    }
+
     if (!HinaFlow::CHECK_IS_FACE_SAMPLED(V))
     {
         addError(obj, SIM_MESSAGE, "Velocity field is not face sampled", UT_ERROR_FATAL);
         return false;
     }
+
+    SIM_GeometryAutoWriteLock lock(G);
+    GU_Detail& gdp = lock.getGdp();
+    if (gdp.getNumPoints() == 0)
+        return true;
+
+    HinaFlow::FLIP::Input input{&gdp, V, MARKER};
+    HinaFlow::FLIP::Param param;
+    HinaFlow::FLIP::Result result{EX_INDEX};
+    HinaFlow::FLIP::P2G(input, param, result);
+    HinaFlow::FLIP::G2P(input, param, result);
 
     return true;
 }

@@ -5,6 +5,7 @@
 #include "GAS_DebugSPHKernel.h"
 #include "GAS_SolveDiffusion.h"
 #include "GAS_SolvePoisson.h"
+#include "GAS_SolverFLIP.h"
 #include "GAS_SolverPBF.h"
 #include "GAS_SolveWave.h"
 
@@ -15,6 +16,7 @@ void initializeSIM(void*)
     IMPLEMENT_DATAFACTORY(GAS_DebugSPHKernel)
     IMPLEMENT_DATAFACTORY(GAS_SolveDiffusion)
     IMPLEMENT_DATAFACTORY(GAS_SolvePoisson)
+    IMPLEMENT_DATAFACTORY(GAS_SolverFLIP)
     IMPLEMENT_DATAFACTORY(GAS_SolverPBF)
     IMPLEMENT_DATAFACTORY(GAS_SolveWave)
 }

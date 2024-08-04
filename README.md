@@ -55,5 +55,16 @@ HinaFlow is a recursive acronym for "**H**inaFlow **i**s **n**ot **a** **F**luid
 - [SPlisHSPlasH](https://github.com/InteractiveComputerGraphics/SPlisHSPlasH.git)
 
 ### Others
+Install external dependencies for houdini built-in python (i.e. hython)
+> Note: change torch version according to your cuda version
+```shell
+curl https://bootstrap.pypa.io/get-pip.py -o ./get-pip.py
+hython get-pip.py
+hython -m pip install --upgrade pip setuptools
+hython -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+hython -m pip install phiflow
+```
+
+
 - https://vimeo.com/241073394
 - https://vimeo.com/241333072

@@ -316,7 +316,7 @@ namespace HinaFlow::Internal::FLIP
             EX_INDEX_RAW = EX_INDEX->getField();
         else
             EX_INDEX_RAW = new SIM_RawIndexField(*MARKER->getField());
-        EX_INDEX_RAW->makeConstant(100); // TODO: check here
+        EX_INDEX_RAW->makeConstant(114514);
         for (int layer = 0; layer <= distance; ++layer)
         {
             SIM_RawIndexField TEMP(*EX_INDEX_RAW);

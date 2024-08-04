@@ -53,3 +53,7 @@ HinaFlow is a recursive acronym for "**H**inaFlow **i**s **n**ot **a** **F**luid
 - [mantaflow](https://github.com/tum-pbs/mantaflow.git)
 - [CubbyFlow](https://github.com/CubbyFlow/CubbyFlow.git)
 - [SPlisHSPlasH](https://github.com/InteractiveComputerGraphics/SPlisHSPlasH.git)
+
+### Others
+- https://vimeo.com/241073394
+- https://vimeo.com/241333072

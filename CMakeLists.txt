@@ -21,6 +21,7 @@ set(DOP_NODEs
         SolvePoisson
         SolverFLIP
         SolverPBF
+        SolverPhiFlow
         SolveWave
 )
 set(SOP_NODEs

@@ -7,6 +7,7 @@
 #include "GAS_SolvePoisson.h"
 #include "GAS_SolverFLIP.h"
 #include "GAS_SolverPBF.h"
+#include "GAS_SolverPhiFlow.h"
 #include "GAS_SolveWave.h"
 
 #include "SOP_Image2Volume.h"
@@ -18,6 +19,7 @@ void initializeSIM(void*)
     IMPLEMENT_DATAFACTORY(GAS_SolvePoisson)
     IMPLEMENT_DATAFACTORY(GAS_SolverFLIP)
     IMPLEMENT_DATAFACTORY(GAS_SolverPBF)
+    IMPLEMENT_DATAFACTORY(GAS_SolverPhiFlow)
     IMPLEMENT_DATAFACTORY(GAS_SolveWave)
 }
 

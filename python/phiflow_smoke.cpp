@@ -243,3 +243,11 @@ _vc.vector['z'].data.native('x,y,z').cpu().numpy().flatten().tolist()
     }
     Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getZField(), result.myDoubleArray);
 }
+
+void HinaFlow::Python::PhiFlowSmoke::CreateScalarField2D(const std::string& name, const UT_Vector2i& resolution, const UT_Vector2& size, const UT_Vector2& center, const Extrapolation& extrapolation, const float init_value)
+{
+}
+
+void HinaFlow::Python::PhiFlowSmoke::CreateVectorField2D(const std::string& name, const UT_Vector2i& resolution, const UT_Vector2& size, const UT_Vector2& center, const Extrapolation& extrapolation, const float init_value)
+{
+}

@@ -58,6 +58,20 @@ namespace HinaFlow::Python
         static void RunFunction(const std::string& func, const std::string& args, const std::string& res);
         static void FetchScalarField(const std::string& name, SIM_ScalarField* FIELD);
         static void FetchVectorField(const std::string& name, SIM_VectorField* FIELD);
+
+
+        static void CreateScalarField2D(const std::string& name
+                                      , const UT_Vector2i& resolution = {100, 100}
+                                      , const UT_Vector2& size = {1, 1}
+                                      , const UT_Vector2& center = {0, 0}
+                                      , const Extrapolation& extrapolation = Extrapolation::Dirichlet
+                                      , const float init_value = 0);
+        static void CreateVectorField2D(const std::string& name
+                                      , const UT_Vector2i& resolution = {100, 100}
+                                      , const UT_Vector2& size = {1, 1}
+                                      , const UT_Vector2& center = {0, 0}
+                                      , const Extrapolation& extrapolation = Extrapolation::Dirichlet
+                                      , const float init_value = 0);
     };
 }
 

@@ -20,6 +20,8 @@ set(PYTHON_FILES
 )
 set(DOP_NODEs
         DebugSPHKernel
+        PhiFlowSmoke2D
+        PhiFlowSmoke3D
         SolveDiffusion
         SolvePoisson
         SolverFLIP

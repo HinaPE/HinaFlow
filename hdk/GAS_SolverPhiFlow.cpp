@@ -13,6 +13,7 @@
 
 
 #include "common.h"
+#include "python/phiflow_smoke.h"
 
 const SIM_DopDescription* GAS_SolverPhiFlow::getDopDescription()
 {
@@ -20,6 +21,7 @@ const SIM_DopDescription* GAS_SolverPhiFlow::getDopDescription()
     PRMs.clear();
     ACTIVATE_GAS_DENSITY
     ACTIVATE_GAS_VELOCITY
+    ACTIVATE_GAS_PRESSURE
     PARAMETER_INT(StartFrame, 1)
     PARAMETER_VECTOR_FLOAT_N(Resolution, 3, 100, 100, 100)
     PARAMETER_VECTOR_FLOAT_N(Size, 3, 1, 1, 1)
@@ -68,15 +70,46 @@ void WriteHoudiniField(SIM_RawField* TARGET, const std::vector<double>& SOURCE)
 
 bool GAS_SolverPhiFlow::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep)
 {
+    HinaFlow::Python::PhiFlowSmoke::DebugMode(true);
+    HinaFlow::Python::PhiFlowSmoke::ImportPhiFlow(HinaFlow::Python::PhiFlowSmoke::Backend::Torch);
+    HinaFlow::Python::PhiFlowSmoke::CreateScalarField(
+        "density",
+        0.02,
+        {100, 100, 100},
+        {0, 0, 0},
+        HinaFlow::Python::PhiFlowSmoke::Extrapolation::Neumann,
+        0);
+    HinaFlow::Python::PhiFlowSmoke::CreateVectorField(
+        "velocity",
+        0.02,
+        {1, 1, 1},
+        {0, 0, 0},
+        HinaFlow::Python::PhiFlowSmoke::Extrapolation::Dirichlet,
+        0);
+    HinaFlow::Python::PhiFlowSmoke::CreateSphereInflow("INFLOW", "density", {0, 0, 0}, 0.1);
+
+    UT_WorkBuffer expr;
+    expr.sprintf(R"(
+@jit_compile  # Only for PyTorch, TensorFlow and Jax
+def step(v, s, p, INFLOW,dt):
+    s = advect.mac_cormack(s, v, dt) + INFLOW
+    buoyancy = resample(s * (0, 0.1, 0), to=v)
+    v = advect.semi_lagrangian(v, v, dt) + buoyancy * dt
+    v, p = fluid.make_incompressible(v, (), Solve('auto', 1e-2, x0=p))
+    return v, s, p
+)");
+    HinaFlow::Python::PhiFlowSmoke::CompileFunction(expr);
+
     const int frame = engine.getSimulationFrame(time);
     if (frame < getStartFrame())
         return true;
 
     SIM_ScalarField* D = getScalarField(obj, GAS_NAME_DENSITY);
     SIM_VectorField* V = getVectorField(obj, GAS_NAME_VELOCITY);
-    if (!D || !V)
+    SIM_ScalarField* P = getScalarField(obj, GAS_NAME_PRESSURE);
+    if (!D)
     {
-        addError(obj, SIM_MESSAGE, "Missing GAS fields", UT_ERROR_FATAL);
+        addError(obj, SIM_MESSAGE, "Missing density fields", UT_ERROR_FATAL);
         return false;
     }
 
@@ -112,16 +145,14 @@ def step(v, s, p, dt=0.1):
     }
     else
     {
+        float dt = static_cast<float>(timestep);
+
         UT_WorkBuffer expr;
         PY_Result result;
         expr.sprintf(R"(
-velocity, smoke, pressure = step(velocity, smoke, pressure)
+velocity, smoke, pressure = step(velocity, smoke, pressure, %f)
 smoke_output = smoke.data.native('x,y,z').cpu().numpy().flatten()
-vc = velocity.at_centers()
-velocityx_output = vc.vector['x'].data.native('x,y,z').cpu().detach().numpy().flatten()
-velocityy_output = vc.vector['y'].data.native('x,y,z').cpu().detach().numpy().flatten()
-velocityz_output = vc.vector['z'].data.native('x,y,z').cpu().detach().numpy().flatten()
-)");
+)", dt);
         PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
         expr.sprintf("smoke_output.tolist()\n");
         result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
@@ -132,32 +163,60 @@ velocityz_output = vc.vector['z'].data.native('x,y,z').cpu().detach().numpy().fl
         }
         WriteHoudiniField(D->getField(), result.myDoubleArray);
 
-        expr.sprintf("velocityx_output.tolist()\n");
-        result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
-        if (result.myResultType != PY_Result::DOUBLE_ARRAY)
+        if (V)
         {
-            printf("Error: %s\n", result.myErrValue.buffer());
-            return false;
-        }
-        WriteHoudiniField(V->getXField(), result.myDoubleArray);
+            expr.sprintf(R"(
+vc = velocity.at_centers()
+velocityx_output = vc.vector['x'].data.native('x,y,z').cpu().detach().numpy().flatten()
+velocityy_output = vc.vector['y'].data.native('x,y,z').cpu().detach().numpy().flatten()
+velocityz_output = vc.vector['z'].data.native('x,y,z').cpu().detach().numpy().flatten()
+)");
+            PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
 
-        expr.sprintf("velocityy_output.tolist()\n");
-        result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
-        if (result.myResultType != PY_Result::DOUBLE_ARRAY)
-        {
-            printf("Error: %s\n", result.myErrValue.buffer());
-            return false;
-        }
-        WriteHoudiniField(V->getYField(), result.myDoubleArray);
+            expr.sprintf("velocityx_output.tolist()\n");
+            result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
+            if (result.myResultType != PY_Result::DOUBLE_ARRAY)
+            {
+                printf("Error: %s\n", result.myErrValue.buffer());
+                return false;
+            }
+            WriteHoudiniField(V->getXField(), result.myDoubleArray);
 
-        expr.sprintf("velocityz_output.tolist()\n");
-        result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
-        if (result.myResultType != PY_Result::DOUBLE_ARRAY)
-        {
-            printf("Error: %s\n", result.myErrValue.buffer());
-            return false;
+            expr.sprintf("velocityy_output.tolist()\n");
+            result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
+            if (result.myResultType != PY_Result::DOUBLE_ARRAY)
+            {
+                printf("Error: %s\n", result.myErrValue.buffer());
+                return false;
+            }
+            WriteHoudiniField(V->getYField(), result.myDoubleArray);
+
+            expr.sprintf("velocityz_output.tolist()\n");
+            result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
+            if (result.myResultType != PY_Result::DOUBLE_ARRAY)
+            {
+                printf("Error: %s\n", result.myErrValue.buffer());
+                return false;
+            }
+            WriteHoudiniField(V->getZField(), result.myDoubleArray);
         }
-        WriteHoudiniField(V->getZField(), result.myDoubleArray);
+
+        if (P)
+        {
+            expr.sprintf(R"(
+pressure_output = pressure.data.native('x,y,z').cpu().numpy().flatten()
+)");
+            PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+
+            expr.sprintf("pressure_output.tolist()\n");
+            result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
+            if (result.myResultType != PY_Result::DOUBLE_ARRAY)
+            {
+                printf("Error: %s\n", result.myErrValue.buffer());
+                return false;
+            }
+            WriteHoudiniField(P->getField(), result.myDoubleArray);
+        }
     }
 
     return true;

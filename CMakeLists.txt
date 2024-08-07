@@ -15,6 +15,9 @@ set(SRC_FILES
         tomography
         wave
 )
+set(PYTHON_FILES
+        phiflow_smoke
+)
 set(DOP_NODEs
         DebugSPHKernel
         SolveDiffusion
@@ -35,6 +38,10 @@ set(SOURCES
 
 foreach (NODE ${SRC_FILES})
     list(APPEND SOURCES src/${NODE}.cpp src/${NODE}.h)
+endforeach ()
+
+foreach (NODE ${PYTHON_FILES})
+    list(APPEND SOURCES python/${NODE}.cpp python/${NODE}.h)
 endforeach ()
 
 foreach (NODE ${DOP_NODEs})

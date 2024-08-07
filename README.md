@@ -49,7 +49,7 @@ HinaFlow is a recursive acronym for "**H**inaFlow **i**s **n**ot **a** **F**luid
 - Eckert, Marie-Lena. “Optimization for Fluid Simulation and Reconstruction of Real-World Flow Phenomena (Optimierung für Fluidsimulationen und Rekonstruktion von realen Strömungsphänomenen).” (2019).
 
 ### Repositories
-
+- [phiflow](https://github.com/tum-pbs/PhiFlow.git)
 - [mantaflow](https://github.com/tum-pbs/mantaflow.git)
 - [CubbyFlow](https://github.com/CubbyFlow/CubbyFlow.git)
 - [SPlisHSPlasH](https://github.com/InteractiveComputerGraphics/SPlisHSPlasH.git)

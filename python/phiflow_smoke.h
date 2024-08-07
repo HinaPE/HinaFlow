@@ -42,13 +42,13 @@ namespace HinaFlow::Python
         static void DebugMode(const bool enable);
         static void ImportPhiFlow(const Backend& backend = Backend::Torch);
         static void CreateScalarField(const std::string& name
-                                      , const int resolution = 0.02
-                                      , const UT_Vector3i& size = {1, 1, 1}
+                                      , const UT_Vector3i& resolution = {100, 100, 100}
+                                      , const UT_Vector3& size = {1, 1, 1}
                                       , const UT_Vector3& center = {0, 0, 0}
                                       , const Extrapolation& extrapolation = Extrapolation::Dirichlet
                                       , const float init_value = 0);
         static void CreateVectorField(const std::string& name
-                                      , const int resolution = 0.02
+                                      , const UT_Vector3i& resolution = {100, 100, 100}
                                       , const UT_Vector3& size = {1, 1, 1}
                                       , const UT_Vector3& center = {0, 0, 0}
                                       , const Extrapolation& extrapolation = Extrapolation::Dirichlet

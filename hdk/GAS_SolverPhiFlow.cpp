@@ -23,8 +23,10 @@ const SIM_DopDescription* GAS_SolverPhiFlow::getDopDescription()
     ACTIVATE_GAS_VELOCITY
     ACTIVATE_GAS_PRESSURE
     PARAMETER_INT(StartFrame, 1)
-    PARAMETER_VECTOR_FLOAT_N(Resolution, 3, 100, 100, 100)
+    PARAMETER_VECTOR_INT_N(Resolution, 3, 100, 100, 100)
     PARAMETER_VECTOR_FLOAT_N(Size, 3, 1, 1, 1)
+    PARAMETER_VECTOR_FLOAT_N(Center, 3, 0, 0, 0)
+    PARAMETER_BOOL(DebugMode, true)
     PRMs.emplace_back();
 
     static SIM_DopDescription DESC(GEN_NODE,
@@ -70,36 +72,6 @@ void WriteHoudiniField(SIM_RawField* TARGET, const std::vector<double>& SOURCE)
 
 bool GAS_SolverPhiFlow::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep)
 {
-    HinaFlow::Python::PhiFlowSmoke::DebugMode(true);
-    HinaFlow::Python::PhiFlowSmoke::ImportPhiFlow(HinaFlow::Python::PhiFlowSmoke::Backend::Torch);
-    HinaFlow::Python::PhiFlowSmoke::CreateScalarField(
-        "density",
-        0.02,
-        {100, 100, 100},
-        {0, 0, 0},
-        HinaFlow::Python::PhiFlowSmoke::Extrapolation::Neumann,
-        0);
-    HinaFlow::Python::PhiFlowSmoke::CreateVectorField(
-        "velocity",
-        0.02,
-        {1, 1, 1},
-        {0, 0, 0},
-        HinaFlow::Python::PhiFlowSmoke::Extrapolation::Dirichlet,
-        0);
-    HinaFlow::Python::PhiFlowSmoke::CreateSphereInflow("INFLOW", "density", {0, 0, 0}, 0.1);
-
-    UT_WorkBuffer expr;
-    expr.sprintf(R"(
-@jit_compile  # Only for PyTorch, TensorFlow and Jax
-def step(v, s, p, INFLOW,dt):
-    s = advect.mac_cormack(s, v, dt) + INFLOW
-    buoyancy = resample(s * (0, 0.1, 0), to=v)
-    v = advect.semi_lagrangian(v, v, dt) + buoyancy * dt
-    v, p = fluid.make_incompressible(v, (), Solve('auto', 1e-2, x0=p))
-    return v, s, p
-)");
-    HinaFlow::Python::PhiFlowSmoke::CompileFunction(expr);
-
     const int frame = engine.getSimulationFrame(time);
     if (frame < getStartFrame())
         return true;
@@ -119,104 +91,52 @@ def step(v, s, p, INFLOW,dt):
         int resx = static_cast<int>(getResolution().x());
         int resy = static_cast<int>(getResolution().y());
         int resz = static_cast<int>(getResolution().z());
-        int sizex = static_cast<int>(getSize().x());
-        int sizey = static_cast<int>(getSize().y());
-        int sizez = static_cast<int>(getSize().z());
+        float sizex = static_cast<float>(getSize().x());
+        float sizey = static_cast<float>(getSize().y());
+        float sizez = static_cast<float>(getSize().z());
+        float centerx = static_cast<float>(getCenter().x());
+        float centery = static_cast<float>(getCenter().y());
+        float centerz = static_cast<float>(getCenter().z());
+
+
+        HinaFlow::Python::PhiFlowSmoke::DebugMode(getDebugMode());
+        HinaFlow::Python::PhiFlowSmoke::ImportPhiFlow(HinaFlow::Python::PhiFlowSmoke::Backend::Torch);
+        HinaFlow::Python::PhiFlowSmoke::CreateScalarField(
+            "DENSITY",
+            {resx, resy, resz},
+            {sizex, sizey, sizez},
+            {centerx, centery, centerz},
+            HinaFlow::Python::PhiFlowSmoke::Extrapolation::Neumann,
+            0);
+        HinaFlow::Python::PhiFlowSmoke::CreateVectorField(
+            "VELOCITY",
+            {resx, resy, resz},
+            {sizex, sizey, sizez},
+            {centerx, centery, centerz},
+            HinaFlow::Python::PhiFlowSmoke::Extrapolation::Dirichlet,
+            0);
+        HinaFlow::Python::PhiFlowSmoke::CreateSphereInflow("INFLOW", "DENSITY", {0, 0, 0}, 0.1);
 
         UT_WorkBuffer expr;
         expr.sprintf(R"(
-from phi.torch.flow import *
-size = (%d, %d, %d)
-res = (%d, %d, %d)
-velocity = StaggeredGrid(values=0, boundary=extrapolation.ZERO, bounds=Box(x=(-size[0]/2.0, size[0]/2.0), y=(-size[1]/2.0, size[1]/2.0), z=(-size[2]/2.0, size[2]/2.0)), resolution=spatial(x=res[0], y=res[1], z=res[2]))
-smoke = CenteredGrid(values=0, boundary=extrapolation.ZERO_GRADIENT, bounds=Box(x=(-size[0]/2.0, size[0]/2.0), y=(-size[1]/2.0, size[1]/2.0), z=(-size[2]/2.0, size[2]/2.0)), resolution=spatial(x=res[0], y=res[1], z=res[2]))
-INFLOW = resample(Sphere(x=0, y=0, z=0, radius=0.1), to=smoke, soft=True)
-pressure = None
-
 @jit_compile  # Only for PyTorch, TensorFlow and Jax
-def step(v, s, p, dt=0.1):
-    s = advect.mac_cormack(s, v, dt) + INFLOW
+def step(v, s, p, src, dt=%f):
+    s = advect.mac_cormack(s, v, dt) + src
     buoyancy = resample(s * (0, 0.1, 0), to=v)
     v = advect.semi_lagrangian(v, v, dt) + buoyancy * dt
     v, p = fluid.make_incompressible(v, (), Solve('auto', 1e-2, x0=p))
     return v, s, p
-)", sizex, sizey, sizez, resx, resy, resz);
-        PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+)", static_cast<float>(timestep));
+        HinaFlow::Python::PhiFlowSmoke::CompileFunction(expr);
     }
     else
     {
-        float dt = static_cast<float>(timestep);
-
-        UT_WorkBuffer expr;
-        PY_Result result;
-        expr.sprintf(R"(
-velocity, smoke, pressure = step(velocity, smoke, pressure, %f)
-smoke_output = smoke.data.native('x,y,z').cpu().numpy().flatten()
-)", dt);
-        PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
-        expr.sprintf("smoke_output.tolist()\n");
-        result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
-        if (result.myResultType != PY_Result::DOUBLE_ARRAY)
-        {
-            printf("Error: %s\n", result.myErrValue.buffer());
-            return false;
-        }
-        WriteHoudiniField(D->getField(), result.myDoubleArray);
-
+        HinaFlow::Python::PhiFlowSmoke::RunFunction("step", "VELOCITY, DENSITY, None, INFLOW", "VELOCITY, DENSITY, PRESSURE");
+        HinaFlow::Python::PhiFlowSmoke::FetchScalarField("DENSITY", D);
         if (V)
-        {
-            expr.sprintf(R"(
-vc = velocity.at_centers()
-velocityx_output = vc.vector['x'].data.native('x,y,z').cpu().detach().numpy().flatten()
-velocityy_output = vc.vector['y'].data.native('x,y,z').cpu().detach().numpy().flatten()
-velocityz_output = vc.vector['z'].data.native('x,y,z').cpu().detach().numpy().flatten()
-)");
-            PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
-
-            expr.sprintf("velocityx_output.tolist()\n");
-            result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
-            if (result.myResultType != PY_Result::DOUBLE_ARRAY)
-            {
-                printf("Error: %s\n", result.myErrValue.buffer());
-                return false;
-            }
-            WriteHoudiniField(V->getXField(), result.myDoubleArray);
-
-            expr.sprintf("velocityy_output.tolist()\n");
-            result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
-            if (result.myResultType != PY_Result::DOUBLE_ARRAY)
-            {
-                printf("Error: %s\n", result.myErrValue.buffer());
-                return false;
-            }
-            WriteHoudiniField(V->getYField(), result.myDoubleArray);
-
-            expr.sprintf("velocityz_output.tolist()\n");
-            result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
-            if (result.myResultType != PY_Result::DOUBLE_ARRAY)
-            {
-                printf("Error: %s\n", result.myErrValue.buffer());
-                return false;
-            }
-            WriteHoudiniField(V->getZField(), result.myDoubleArray);
-        }
-
+            HinaFlow::Python::PhiFlowSmoke::FetchVectorField("VELOCITY", V);
         if (P)
-        {
-            expr.sprintf(R"(
-pressure_output = pressure.data.native('x,y,z').cpu().numpy().flatten()
-)");
-            PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
-
-            expr.sprintf("pressure_output.tolist()\n");
-            result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
-            if (result.myResultType != PY_Result::DOUBLE_ARRAY)
-            {
-                printf("Error: %s\n", result.myErrValue.buffer());
-                return false;
-            }
-            WriteHoudiniField(P->getField(), result.myDoubleArray);
-        }
+            HinaFlow::Python::PhiFlowSmoke::FetchScalarField("PRESSURE", P);
     }
 
     return true;

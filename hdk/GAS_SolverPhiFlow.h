@@ -27,6 +27,8 @@ public:
     GETSET_DATA_FUNCS_I("StartFrame", StartFrame)
     GETSET_DATA_FUNCS_V3("Resolution", Resolution)
     GETSET_DATA_FUNCS_V3("Size", Size)
+    GETSET_DATA_FUNCS_V3("Center", Center)
+    GETSET_DATA_FUNCS_B("DebugMode", DebugMode)
 
 protected:
     explicit GAS_SolverPhiFlow(const SIM_DataFactory* factory): BaseClass(factory) {}

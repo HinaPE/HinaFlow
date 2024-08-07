@@ -26,7 +26,7 @@ const SIM_DopDescription* GAS_PhiFlowSmoke3D::getDopDescription()
     PARAMETER_VECTOR_INT_N(Resolution, 3, 100, 100, 100)
     PARAMETER_VECTOR_FLOAT_N(Size, 3, 1, 1, 1)
     PARAMETER_VECTOR_FLOAT_N(Center, 3, 0, 0, 0)
-    PARAMETER_BOOL(DebugMode, true)
+    PARAMETER_BOOL(DebugMode, false)
     PRMs.emplace_back();
 
     static SIM_DopDescription DESC(GEN_NODE,

@@ -72,6 +72,9 @@ namespace HinaFlow::Python
                                       , const UT_Vector2& center = {0, 0}
                                       , const Extrapolation& extrapolation = Extrapolation::Dirichlet
                                       , const float init_value = 0);
+        static void CreateSphereInflow2D(const std::string& name, const std::string& match_field, const UT_Vector2& center = {0, 0}, const float radius = 0.1);
+        static void FetchScalarField2D(const std::string& name, SIM_ScalarField* FIELD);
+        static void FetchVectorField2D(const std::string& name, SIM_VectorField* FIELD);
     };
 }
 

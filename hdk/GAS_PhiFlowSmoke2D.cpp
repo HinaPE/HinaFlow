@@ -55,5 +55,56 @@ bool GAS_PhiFlowSmoke2D::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, S
         return false;
     }
 
+
+    if (frame == getStartFrame())
+    {
+        int resx = static_cast<int>(getResolution().x());
+        int resy = static_cast<int>(getResolution().y());
+        float sizex = static_cast<float>(getSize().x());
+        float sizey = static_cast<float>(getSize().y());
+        float centerx = static_cast<float>(getCenter().x());
+        float centery = static_cast<float>(getCenter().y());
+
+
+        HinaFlow::Python::PhiFlowSmoke::DebugMode(getDebugMode());
+        HinaFlow::Python::PhiFlowSmoke::ImportPhiFlow(HinaFlow::Python::PhiFlowSmoke::Backend::Torch);
+        HinaFlow::Python::PhiFlowSmoke::CreateScalarField2D(
+            "DENSITY",
+            {resx, resy},
+            {sizex, sizey},
+            {centerx, centery},
+            HinaFlow::Python::PhiFlowSmoke::Extrapolation::Neumann,
+            0);
+        HinaFlow::Python::PhiFlowSmoke::CreateVectorField2D(
+            "VELOCITY",
+            {resx, resy},
+            {sizex, sizey},
+            {centerx, centery},
+            HinaFlow::Python::PhiFlowSmoke::Extrapolation::Dirichlet,
+            0);
+        HinaFlow::Python::PhiFlowSmoke::CreateSphereInflow2D("INFLOW", "DENSITY", {0, 0}, 0.1);
+
+        UT_WorkBuffer expr;
+        expr.sprintf(R"(
+@jit_compile  # Only for PyTorch, TensorFlow and Jax
+def step(v, s, p, src, dt=%f):
+    s = advect.mac_cormack(s, v, dt) + 0.1 * src
+    buoyancy = resample(s * (0, 5), to=v)
+    v = advect.semi_lagrangian(v, v, dt) + buoyancy * dt
+    v, p = fluid.make_incompressible(v, (), Solve('auto', 1e-2, x0=p))
+    return v, s, p
+)", static_cast<float>(timestep));
+        HinaFlow::Python::PhiFlowSmoke::CompileFunction(expr);
+    }
+    else
+    {
+        HinaFlow::Python::PhiFlowSmoke::RunFunction("step", "VELOCITY, DENSITY, None, INFLOW", "VELOCITY, DENSITY, PRESSURE");
+        HinaFlow::Python::PhiFlowSmoke::FetchScalarField2D("DENSITY", D);
+        if (V)
+            HinaFlow::Python::PhiFlowSmoke::FetchVectorField2D("VELOCITY", V);
+        if (P)
+            HinaFlow::Python::PhiFlowSmoke::FetchScalarField2D("PRESSURE", P);
+    }
+
     return true;
 }

@@ -27,6 +27,10 @@ const SIM_DopDescription* GAS_PhiFlowSmoke3D::getDopDescription()
     PARAMETER_VECTOR_FLOAT_N(Size, 3, 1, 1, 1)
     PARAMETER_VECTOR_FLOAT_N(Center, 3, 0, 0, 0)
     PARAMETER_BOOL(DebugMode, false)
+
+    static PRM_Name svpn("SourceVolumePath", "Source Volume Path");
+    static PRM_Template svp(PRM_STRING, PRM_TYPE_DYNAMIC_PATH, 1, &svpn);
+    PRMs.emplace_back(svp);
     PRMs.emplace_back();
 
     static SIM_DopDescription DESC(GEN_NODE,
@@ -55,6 +59,24 @@ bool GAS_PhiFlowSmoke3D::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, S
         return false;
     }
 
+    UT_WorkBuffer expr;
+    expr.sprintf(R"(
+import hou
+svp = "%s"
+node = hou.node(svp)
+if node:
+    print("Node founded:", node)
+else:
+    print("Node not found.")
+geo = node.geometry()
+if geo:
+    print("Geometry founded:", geo)
+    vol = geo.prim(0)
+    print("res: ", vol.resolution())
+else:
+    print("Geometry not found.")
+)", getSourceVolumePath().toStdString().c_str());
+    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
 
     if (frame == getStartFrame())
     {

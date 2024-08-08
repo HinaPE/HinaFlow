@@ -29,6 +29,7 @@ public:
     GETSET_DATA_FUNCS_V3("Size", Size)
     GETSET_DATA_FUNCS_V3("Center", Center)
     GETSET_DATA_FUNCS_B("DebugMode", DebugMode)
+    GETSET_DATA_FUNCS_S("SourceVolumePath", SourceVolumePath)
 
 protected:
     explicit GAS_PhiFlowSmoke3D(const SIM_DataFactory* factory): BaseClass(factory) {}

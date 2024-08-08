@@ -47,6 +47,7 @@
 
 #include <SYS/SYS_Math.h>
 
+#include <Python.h>
 #include <PY/PY_Python.h>
 #include <PY/PY_CPythonAPI.h>
 

@@ -54,6 +54,8 @@ namespace HinaFlow::Python
                                       , const Extrapolation& extrapolation = Extrapolation::Dirichlet
                                       , const float init_value = 0);
         static void CreateSphereInflow(const std::string& name, const std::string& match_field, const UT_Vector3& center = {0, 0, 0}, const float radius = 0.1);
+        static void CreateScalarFieldInflow(const std::string& name, const std::string& match_field, const SIM_ScalarField* FIELD);
+        static void CreateVectorFieldInflow(const std::string& name, const std::string& match_field, const SIM_VectorField* FIELD);
         static void CompileFunction(const UT_WorkBuffer& expr);
         static void RunFunction(const std::string& func, const std::string& args, const std::string& res);
         static void FetchScalarField(const std::string& name, SIM_ScalarField* FIELD);

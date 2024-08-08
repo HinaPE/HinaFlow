@@ -28,6 +28,63 @@ static const std::string DEBUG_PY_FILENAME = "debug_phiflow.py";
         file.close(); \
     }
 
+namespace HinaFlow::Internal::Python::PhiFlowSmoke
+{
+    void WriteField3DPartial(SIM_RawField* TARGET, const std::vector<double>& SOURCE, const UT_JobInfo& info)
+    {
+        UT_VoxelArrayIteratorF vit;
+        vit.setArray(TARGET->fieldNC());
+        vit.setCompressOnExit(true);
+        vit.setPartialRange(info.job(), info.numJobs());
+
+        const UT_Vector3I res = TARGET->getVoxelRes();
+        for (vit.rewind(); !vit.atEnd(); vit.advance())
+        {
+            UT_Vector3I cell(vit.x(), vit.y(), vit.z());
+            const auto idx = TO_1D_IDX(cell, res);
+            vit.setValue(static_cast<float>(SOURCE[idx]));
+        }
+    }
+
+    THREADED_METHOD2(, true, WriteField3D, SIM_RawField *, TARGET, const std::vector<double>&, SOURCE);
+
+    void WriteField2DPartial(SIM_RawField* TARGET, const std::vector<double>& SOURCE, const int AXIS1, const int AXIS2, const UT_JobInfo& info)
+    {
+        UT_VoxelArrayIteratorF vit;
+        vit.setArray(TARGET->fieldNC());
+        vit.setCompressOnExit(true);
+        vit.setPartialRange(info.job(), info.numJobs());
+
+        const UT_Vector2I res = {TARGET->getVoxelRes()[AXIS1], TARGET->getVoxelRes()[AXIS2]};
+        for (vit.rewind(); !vit.atEnd(); vit.advance())
+        {
+            UT_Vector2I cell(vit.idx(AXIS1), vit.idx(AXIS2));
+            const auto idx = TO_1D_IDX(cell, res);
+            vit.setValue(static_cast<float>(SOURCE[idx]));
+        }
+    }
+
+    THREADED_METHOD4(, true, WriteField2D, SIM_RawField *, TARGET, const std::vector<double>&, SOURCE, const int, AXIS1, const int, AXIS2);
+
+    void WriteHoudiniField(SIM_RawField* TARGET, const std::vector<double>& SOURCE)
+    {
+        if (TARGET->field()->numVoxels() != SOURCE.size())
+        {
+            printf("Error: Field size mismatch\n");
+            printf("voxels: %lld, size: %lld\n", TARGET->field()->numVoxels(), SOURCE.size());
+            return;
+        }
+        if (TARGET->getXRes() == 1)
+            WriteField2D(TARGET, SOURCE, 2, 1);
+        else if (TARGET->getYRes() == 1)
+            WriteField2D(TARGET, SOURCE, 2, 0);
+        else if (TARGET->getZRes() == 1)
+            WriteField2DNoThread(TARGET, SOURCE, 1, 0);
+        else
+            WriteField3D(TARGET, SOURCE);
+    }
+}
+
 void HinaFlow::Python::PhiFlowSmoke::DebugMode(const bool enable)
 {
     DEBUG_MODE = enable;
@@ -135,6 +192,24 @@ void HinaFlow::Python::PhiFlowSmoke::CreateSphereInflow(const std::string& name,
     RECORD_EXPRESSION(expr)
 }
 
+void HinaFlow::Python::PhiFlowSmoke::CreateScalarFieldInflow(const std::string& name, const std::string& match_field, const SIM_ScalarField* FIELD)
+{
+    UT_WorkBuffer expr;
+    expr.sprintf(R"(
+import hou
+print("fps: ", hou.fps())
+node = hou.pwd()
+print("node: ", node)
+)");
+    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+
+    RECORD_EXPRESSION(expr);
+}
+
+void HinaFlow::Python::PhiFlowSmoke::CreateVectorFieldInflow(const std::string& name, const std::string& match_field, const SIM_VectorField* FIELD)
+{
+}
+
 void HinaFlow::Python::PhiFlowSmoke::CompileFunction(const UT_WorkBuffer& expr)
 {
     PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
@@ -150,129 +225,6 @@ void HinaFlow::Python::PhiFlowSmoke::RunFunction(const std::string& func, const 
     PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
 
     RECORD_EXPRESSION(expr)
-}
-
-namespace HinaFlow::Internal::Python::PhiFlowSmoke
-{
-    void WriteField3DPartial(SIM_RawField* TARGET, const std::vector<double>& SOURCE, const UT_JobInfo& info)
-    {
-        UT_VoxelArrayIteratorF vit;
-        vit.setArray(TARGET->fieldNC());
-        vit.setCompressOnExit(true);
-        vit.setPartialRange(info.job(), info.numJobs());
-
-        const UT_Vector3I res = TARGET->getVoxelRes();
-        for (vit.rewind(); !vit.atEnd(); vit.advance())
-        {
-            UT_Vector3I cell(vit.x(), vit.y(), vit.z());
-            const auto idx = TO_1D_IDX(cell, res);
-            vit.setValue(static_cast<float>(SOURCE[idx]));
-        }
-    }
-
-    THREADED_METHOD2(, true, WriteField3D, SIM_RawField *, TARGET, const std::vector<double>&, SOURCE);
-
-    void WriteField2DPartial(SIM_RawField* TARGET, const std::vector<double>& SOURCE, const int AXIS1, const int AXIS2, const UT_JobInfo& info)
-    {
-        UT_VoxelArrayIteratorF vit;
-        vit.setArray(TARGET->fieldNC());
-        vit.setCompressOnExit(true);
-        vit.setPartialRange(info.job(), info.numJobs());
-
-        const UT_Vector2I res = {TARGET->getVoxelRes()[AXIS1], TARGET->getVoxelRes()[AXIS2]};
-        for (vit.rewind(); !vit.atEnd(); vit.advance())
-        {
-            UT_Vector2I cell(vit.idx(AXIS1), vit.idx(AXIS2));
-            const auto idx = TO_1D_IDX(cell, res);
-            vit.setValue(static_cast<float>(SOURCE[idx]));
-        }
-    }
-
-    THREADED_METHOD4(, true, WriteField2D, SIM_RawField *, TARGET, const std::vector<double>&, SOURCE, const int, AXIS1, const int, AXIS2);
-
-    void WriteHoudiniField(SIM_RawField* TARGET, const std::vector<double>& SOURCE)
-    {
-        if (TARGET->field()->numVoxels() != SOURCE.size())
-        {
-            printf("Error: Field size mismatch\n");
-            printf("voxels: %lld, size: %lld\n", TARGET->field()->numVoxels(), SOURCE.size());
-            return;
-        }
-        if (TARGET->getXRes() == 1)
-            WriteField2D(TARGET, SOURCE, 2, 1);
-        else if (TARGET->getYRes() == 1)
-            WriteField2D(TARGET, SOURCE, 2, 0);
-        else if (TARGET->getZRes() == 1)
-            WriteField2DNoThread(TARGET, SOURCE, 1, 0);
-        else
-            WriteField3D(TARGET, SOURCE);
-    }
-}
-
-void HinaFlow::Python::PhiFlowSmoke::CreateSphereInflow2D(const std::string& name, const std::string& match_field, const UT_Vector2& center, const float radius)
-{
-    UT_WorkBuffer expr;
-    expr.sprintf(R"(
-%s = resample(Sphere(x=%f, y=%f, radius=%f), to=%s, soft=True)
-)", name.c_str(), center[0], center[1], radius, match_field.c_str());
-    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
-
-    RECORD_EXPRESSION(expr)
-}
-
-void HinaFlow::Python::PhiFlowSmoke::FetchScalarField2D(const std::string& name, SIM_ScalarField* FIELD)
-{
-    UT_WorkBuffer expr;
-    expr.sprintf(R"(
-%s.data.native('x,y').cpu().numpy().flatten().tolist()
-)", name.c_str());
-    const PY_Result result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
-    if (result.myResultType != PY_Result::DOUBLE_ARRAY)
-    {
-        printf("Error: %s\n", result.myErrValue.buffer());
-        return;
-    }
-    Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getField(), result.myDoubleArray);
-}
-
-void HinaFlow::Python::PhiFlowSmoke::FetchVectorField2D(const std::string& name, SIM_VectorField* FIELD)
-{
-    UT_WorkBuffer expr;
-    PY_Result result;
-
-    expr.sprintf(R"(
-_vc = %s.at_centers()
-)", name.c_str());
-    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
-
-    expr.sprintf(R"(
-_vc.vector['x'].data.native('x,y').cpu().numpy().flatten().tolist()
-)");
-    result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
-    if (result.myResultType != PY_Result::DOUBLE_ARRAY)
-    {
-        printf("Error: %s\n", result.myErrValue.buffer());
-        return;
-    }
-    if (FIELD->getTotalVoxelRes().x() == 1)
-        Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getYField(), result.myDoubleArray);
-    else
-        Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getXField(), result.myDoubleArray);
-
-
-    expr.sprintf(R"(
-_vc.vector['y'].data.native('x,y').cpu().numpy().flatten().tolist()
-)");
-    result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
-    if (result.myResultType != PY_Result::DOUBLE_ARRAY)
-    {
-        printf("Error: %s\n", result.myErrValue.buffer());
-        return;
-    }
-    if (FIELD->getTotalVoxelRes().y() == 1)
-        Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getZField(), result.myDoubleArray);
-    else
-        Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getYField(), result.myDoubleArray);
 }
 
 void HinaFlow::Python::PhiFlowSmoke::FetchScalarField(const std::string& name, SIM_ScalarField* FIELD)
@@ -386,4 +338,70 @@ res = (%d, %d)
     PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
 
     RECORD_EXPRESSION(expr)
+}
+
+void HinaFlow::Python::PhiFlowSmoke::CreateSphereInflow2D(const std::string& name, const std::string& match_field, const UT_Vector2& center, const float radius)
+{
+    UT_WorkBuffer expr;
+    expr.sprintf(R"(
+%s = resample(Sphere(x=%f, y=%f, radius=%f), to=%s, soft=True)
+)", name.c_str(), center[0], center[1], radius, match_field.c_str());
+    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+
+    RECORD_EXPRESSION(expr)
+}
+
+void HinaFlow::Python::PhiFlowSmoke::FetchScalarField2D(const std::string& name, SIM_ScalarField* FIELD)
+{
+    UT_WorkBuffer expr;
+    expr.sprintf(R"(
+%s.data.native('x,y').cpu().numpy().flatten().tolist()
+)", name.c_str());
+    const PY_Result result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
+    if (result.myResultType != PY_Result::DOUBLE_ARRAY)
+    {
+        printf("Error: %s\n", result.myErrValue.buffer());
+        return;
+    }
+    Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getField(), result.myDoubleArray);
+}
+
+void HinaFlow::Python::PhiFlowSmoke::FetchVectorField2D(const std::string& name, SIM_VectorField* FIELD)
+{
+    UT_WorkBuffer expr;
+    PY_Result result;
+
+    expr.sprintf(R"(
+_vc = %s.at_centers()
+)", name.c_str());
+    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+
+    expr.sprintf(R"(
+_vc.vector['x'].data.native('x,y').cpu().numpy().flatten().tolist()
+)");
+    result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
+    if (result.myResultType != PY_Result::DOUBLE_ARRAY)
+    {
+        printf("Error: %s\n", result.myErrValue.buffer());
+        return;
+    }
+    if (FIELD->getTotalVoxelRes().x() == 1)
+        Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getYField(), result.myDoubleArray);
+    else
+        Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getXField(), result.myDoubleArray);
+
+
+    expr.sprintf(R"(
+_vc.vector['y'].data.native('x,y').cpu().numpy().flatten().tolist()
+)");
+    result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
+    if (result.myResultType != PY_Result::DOUBLE_ARRAY)
+    {
+        printf("Error: %s\n", result.myErrValue.buffer());
+        return;
+    }
+    if (FIELD->getTotalVoxelRes().y() == 1)
+        Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getZField(), result.myDoubleArray);
+    else
+        Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getYField(), result.myDoubleArray);
 }

@@ -85,6 +85,17 @@ namespace HinaFlow::Internal::Python::PhiFlowSmoke
     }
 }
 
+void HinaFlow::Python::PhiFlowSmoke::ImportHou()
+{
+    UT_WorkBuffer expr;
+    expr.sprintf(R"(
+import hou
+)");
+    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+
+    RECORD_EXPRESSION(expr);
+}
+
 void HinaFlow::Python::PhiFlowSmoke::DebugMode(const bool enable)
 {
     DEBUG_MODE = enable;
@@ -127,6 +138,23 @@ from phi.tf.flow import *
     PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
 
     RECORD_EXPRESSION(expr);
+}
+
+void HinaFlow::Python::PhiFlowSmoke::CompileFunction(const UT_WorkBuffer& expr)
+{
+    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+    RECORD_EXPRESSION(expr)
+}
+
+void HinaFlow::Python::PhiFlowSmoke::RunFunction(const std::string& func, const std::string& args, const std::string& res)
+{
+    UT_WorkBuffer expr;
+    expr.sprintf(R"(
+%s = %s(%s)
+)", res.c_str(), func.c_str(), args.c_str());
+    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+
+    RECORD_EXPRESSION(expr)
 }
 
 void HinaFlow::Python::PhiFlowSmoke::CreateScalarField(const std::string& name, const UT_Vector3i& resolution, const UT_Vector3& size, const UT_Vector3& center, const Extrapolation& extrapolation, const float init_value)
@@ -181,6 +209,84 @@ res = (%d, %d, %d)
     RECORD_EXPRESSION(expr)
 }
 
+void HinaFlow::Python::PhiFlowSmoke::CreateScalarFieldFromHoudiniVDB(const std::string& name, const std::string& match_field, const std::string& external_volume_name)
+{
+    UT_WorkBuffer expr;
+    expr.sprintf(R"(
+node = hou.node("%s")
+geo = node.geometry()
+%s = geo.prim(%d)
+)", name.c_str(), match_field.c_str(), external_volume_name.c_str());
+    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+}
+
+void HinaFlow::Python::PhiFlowSmoke::CreateVectorFieldFromHoudiniVDB(const std::string& name, const std::string& match_field, const std::string& external_volume_name)
+{
+}
+
+void HinaFlow::Python::PhiFlowSmoke::CreateScalarField2D(const std::string& name, const UT_Vector2i& resolution, const UT_Vector2& size, const UT_Vector2& center, const Extrapolation& extrapolation, const float init_value)
+{
+    std::string extrapolation_str;
+    switch (extrapolation)
+    {
+    case Extrapolation::Dirichlet:
+        extrapolation_str = "extrapolation.ZERO";
+        break;
+    case Extrapolation::Neumann:
+        extrapolation_str = "extrapolation.ZERO_GRADIENT";
+        break;
+    default:
+        throw std::runtime_error("Invalid extrapolation");
+    }
+    UT_WorkBuffer expr;
+    expr.sprintf(R"(
+center = (%f, %f)
+size = (%f, %f)
+res = (%d, %d)
+%s = CenteredGrid(values=0, boundary=%s, bounds=Box(x=(-size[0]/2.0 + center[0], size[0]/2.0 + center[0]), y=(-size[1]/2.0 + center[1], size[1]/2.0 + center[1])), resolution=spatial(x=res[0], y=res[1]))
+)", center[0], center[1], size[0], size[1], resolution[0], resolution[1], name.c_str(), extrapolation_str.c_str());
+    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+
+    RECORD_EXPRESSION(expr)
+}
+
+void HinaFlow::Python::PhiFlowSmoke::CreateVectorField2D(const std::string& name, const UT_Vector2i& resolution, const UT_Vector2& size, const UT_Vector2& center, const Extrapolation& extrapolation, const float init_value)
+{
+    std::string extrapolation_str;
+    switch (extrapolation)
+    {
+    case Extrapolation::Dirichlet:
+        extrapolation_str = "extrapolation.ZERO";
+        break;
+    case Extrapolation::Neumann:
+        extrapolation_str = "extrapolation.ZERO_GRADIENT";
+        break;
+    default:
+        throw std::runtime_error("Invalid extrapolation");
+    }
+    UT_WorkBuffer expr;
+    expr.sprintf(R"(
+center = (%f, %f)
+size = (%f, %f)
+res = (%d, %d)
+%s = StaggeredGrid(values=0, boundary=%s, bounds=Box(x=(-size[0]/2.0 + center[0], size[0]/2.0 + center[0]), y=(-size[1]/2.0 + center[1], size[1]/2.0 + center[1])), resolution=spatial(x=res[0], y=res[1]))
+)", center[0], center[1], size[0], size[1], resolution[0], resolution[1], name.c_str(), extrapolation_str.c_str());
+    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+
+    RECORD_EXPRESSION(expr)
+}
+
+void HinaFlow::Python::PhiFlowSmoke::FindExternalVolume(const std::string& name, const std::string& path, const int prim_idx)
+{
+    UT_WorkBuffer expr;
+    expr.sprintf(R"(
+node = hou.node("%s")
+geo = node.geometry()
+%s = geo.prim(%d)
+)", path.c_str(), name.c_str(), prim_idx);
+    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+}
+
 void HinaFlow::Python::PhiFlowSmoke::CreateSphereInflow(const std::string& name, const std::string& match_field, const UT_Vector3& center, const float radius)
 {
     UT_WorkBuffer expr;
@@ -192,40 +298,17 @@ void HinaFlow::Python::PhiFlowSmoke::CreateSphereInflow(const std::string& name,
     RECORD_EXPRESSION(expr)
 }
 
-void HinaFlow::Python::PhiFlowSmoke::CreateScalarFieldInflow(const std::string& name, const std::string& match_field, const SIM_ScalarField* FIELD)
+void HinaFlow::Python::PhiFlowSmoke::CreateSphereInflow2D(const std::string& name, const std::string& match_field, const UT_Vector2& center, const float radius)
 {
     UT_WorkBuffer expr;
     expr.sprintf(R"(
-import hou
-print("fps: ", hou.fps())
-node = hou.pwd()
-print("node: ", node)
-)");
-    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
-
-    RECORD_EXPRESSION(expr);
-}
-
-void HinaFlow::Python::PhiFlowSmoke::CreateVectorFieldInflow(const std::string& name, const std::string& match_field, const SIM_VectorField* FIELD)
-{
-}
-
-void HinaFlow::Python::PhiFlowSmoke::CompileFunction(const UT_WorkBuffer& expr)
-{
-    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
-    RECORD_EXPRESSION(expr)
-}
-
-void HinaFlow::Python::PhiFlowSmoke::RunFunction(const std::string& func, const std::string& args, const std::string& res)
-{
-    UT_WorkBuffer expr;
-    expr.sprintf(R"(
-%s = %s(%s)
-)", res.c_str(), func.c_str(), args.c_str());
+%s = resample(Sphere(x=%f, y=%f, radius=%f), to=%s, soft=True)
+)", name.c_str(), center[0], center[1], radius, match_field.c_str());
     PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
 
     RECORD_EXPRESSION(expr)
 }
+
 
 void HinaFlow::Python::PhiFlowSmoke::FetchScalarField(const std::string& name, SIM_ScalarField* FIELD)
 {
@@ -288,69 +371,6 @@ _vc.vector['z'].data.native('x,y,z').cpu().numpy().flatten().tolist()
     Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getZField(), result.myDoubleArray);
 }
 
-void HinaFlow::Python::PhiFlowSmoke::CreateScalarField2D(const std::string& name, const UT_Vector2i& resolution, const UT_Vector2& size, const UT_Vector2& center, const Extrapolation& extrapolation, const float init_value)
-{
-    std::string extrapolation_str;
-    switch (extrapolation)
-    {
-    case Extrapolation::Dirichlet:
-        extrapolation_str = "extrapolation.ZERO";
-        break;
-    case Extrapolation::Neumann:
-        extrapolation_str = "extrapolation.ZERO_GRADIENT";
-        break;
-    default:
-        throw std::runtime_error("Invalid extrapolation");
-    }
-    UT_WorkBuffer expr;
-    expr.sprintf(R"(
-center = (%f, %f)
-size = (%f, %f)
-res = (%d, %d)
-%s = CenteredGrid(values=0, boundary=%s, bounds=Box(x=(-size[0]/2.0 + center[0], size[0]/2.0 + center[0]), y=(-size[1]/2.0 + center[1], size[1]/2.0 + center[1])), resolution=spatial(x=res[0], y=res[1]))
-)", center[0], center[1], size[0], size[1], resolution[0], resolution[1], name.c_str(), extrapolation_str.c_str());
-    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
-
-    RECORD_EXPRESSION(expr)
-}
-
-void HinaFlow::Python::PhiFlowSmoke::CreateVectorField2D(const std::string& name, const UT_Vector2i& resolution, const UT_Vector2& size, const UT_Vector2& center, const Extrapolation& extrapolation, const float init_value)
-{
-    std::string extrapolation_str;
-    switch (extrapolation)
-    {
-    case Extrapolation::Dirichlet:
-        extrapolation_str = "extrapolation.ZERO";
-        break;
-    case Extrapolation::Neumann:
-        extrapolation_str = "extrapolation.ZERO_GRADIENT";
-        break;
-    default:
-        throw std::runtime_error("Invalid extrapolation");
-    }
-    UT_WorkBuffer expr;
-    expr.sprintf(R"(
-center = (%f, %f)
-size = (%f, %f)
-res = (%d, %d)
-%s = StaggeredGrid(values=0, boundary=%s, bounds=Box(x=(-size[0]/2.0 + center[0], size[0]/2.0 + center[0]), y=(-size[1]/2.0 + center[1], size[1]/2.0 + center[1])), resolution=spatial(x=res[0], y=res[1]))
-)", center[0], center[1], size[0], size[1], resolution[0], resolution[1], name.c_str(), extrapolation_str.c_str());
-    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
-
-    RECORD_EXPRESSION(expr)
-}
-
-void HinaFlow::Python::PhiFlowSmoke::CreateSphereInflow2D(const std::string& name, const std::string& match_field, const UT_Vector2& center, const float radius)
-{
-    UT_WorkBuffer expr;
-    expr.sprintf(R"(
-%s = resample(Sphere(x=%f, y=%f, radius=%f), to=%s, soft=True)
-)", name.c_str(), center[0], center[1], radius, match_field.c_str());
-    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
-
-    RECORD_EXPRESSION(expr)
-}
-
 void HinaFlow::Python::PhiFlowSmoke::FetchScalarField2D(const std::string& name, SIM_ScalarField* FIELD)
 {
     UT_WorkBuffer expr;
@@ -404,4 +424,13 @@ _vc.vector['y'].data.native('x,y').cpu().numpy().flatten().tolist()
         Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getZField(), result.myDoubleArray);
     else
         Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getYField(), result.myDoubleArray);
+}
+
+void HinaFlow::Python::PhiFlowSmoke::DebugHoudiniVolume(const std::string& name)
+{
+    UT_WorkBuffer expr;
+    expr.sprintf(R"(
+print(%s.resolution())
+)", name.c_str());
+    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
 }

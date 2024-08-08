@@ -213,11 +213,18 @@ void HinaFlow::Python::PhiFlowSmoke::CreateScalarFieldFromHoudiniVDB(const std::
 {
     UT_WorkBuffer expr;
     expr.sprintf(R"(
-node = hou.node("%s")
-geo = node.geometry()
-%s = geo.prim(%d)
-)", name.c_str(), match_field.c_str(), external_volume_name.c_str());
+center = %s.sampled_elements.center
+tmp = np.zeros((center.shape.spatial.sizes[0], center.shape.spatial.sizes[1], center.shape.spatial.sizes[2]))
+for i in range(center.shape.spatial.sizes[0]):
+    for j in range(center.shape.spatial.sizes[1]):
+        for k in range(center.shape.spatial.sizes[2]):
+            ct = center.x[i].y[j].z[k]
+            tmp[i,j,k] = %s.sample((float(ct[0]), float(ct[1]), float(ct[2])))
+%s = CenteredGrid(values=tensor(tmp, spatial('x,y,z')), boundary=%s.boundary, bounds=%s.bounds, resolution=%s.resolution)
+)", match_field.c_str(), external_volume_name.c_str(), name.c_str(), match_field.c_str(), match_field.c_str(), match_field.c_str());
     PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+
+    RECORD_EXPRESSION(expr)
 }
 
 void HinaFlow::Python::PhiFlowSmoke::CreateVectorFieldFromHoudiniVDB(const std::string& name, const std::string& match_field, const std::string& external_volume_name)
@@ -285,6 +292,8 @@ geo = node.geometry()
 %s = geo.prim(%d)
 )", path.c_str(), name.c_str(), prim_idx);
     PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+
+    RECORD_EXPRESSION(expr)
 }
 
 void HinaFlow::Python::PhiFlowSmoke::CreateSphereInflow(const std::string& name, const std::string& match_field, const UT_Vector3& center, const float radius)

@@ -58,12 +58,6 @@ namespace HinaFlow::Python
                                       , const UT_Vector3& center = {0, 0, 0}
                                       , const Extrapolation& extrapolation = Extrapolation::Dirichlet
                                       , const float init_value = 0);
-        static void CreateScalarFieldFromHoudiniVDB(const std::string& name
-                                            , const std::string& match_field
-                                            , const std::string& external_volume_name);
-        static void CreateVectorFieldFromHoudiniVDB(const std::string& name
-                                            , const std::string& match_field
-                                            , const std::string& external_volume_name);
         static void CreateScalarField2D(const std::string& name
                                         , const UT_Vector2i& resolution = {100, 100}
                                         , const UT_Vector2& size = {1, 1}
@@ -79,9 +73,10 @@ namespace HinaFlow::Python
 
 
         // Inflow
-        static void FindExternalVolume(const std::string& name, const std::string& houdini_name, const std::string& path, const int prim_idx);
+        static void CreateFromExternalVolume(const std::string& name, const std::string& houdini_name, const std::string& path, const int prim_idx);
         static void CreateSphereInflow(const std::string& name, const std::string& match_field, const UT_Vector3& center = {0, 0, 0}, const float radius = 0.1);
         static void CreateSphereInflow2D(const std::string& name, const std::string& match_field, const UT_Vector2& center = {0, 0}, const float radius = 0.1);
+        static void CreateInflowFluids(const std::string& name, const std::string& target, const std::string& source);
 
 
         // Fetch fields

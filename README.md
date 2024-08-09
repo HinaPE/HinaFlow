@@ -8,9 +8,9 @@ HinaFlow is a recursive acronym for "**H**inaFlow **i**s **n**ot **a** **F**luid
 
 ## Key Features
 
-**Differentiable Fluid Solver and Even Deep Learning based Fluid Solver in Houdini**
+**Differentiable Fluid Solver and Deep Learning based Fluid Solver in Houdini**
 
-HinaFlow runs on two contexts: Houdini and Python. Either context uses Houdini hdk nodes. (No Houdini's Python node)
+HinaFlow runs on two contexts: Houdini and Python. Either context uses Houdini HDK nodes. (No Houdini's Python node)
 - When running on pure Houdini, you can purely use HinaFlow's HDK nodes as a extended Houdini Digital Asset. There is no difference from the original Houdini workflow.
 - When running on Python context, you can take full advantage of the whole Python ecosystem, including PyTorch, TensorFlow, NumPy, etc, and build your own fluid simulation pipeline.
 - The two contexts are fully compatible with each other. You can switch between them at any time.
@@ -52,6 +52,10 @@ If you want to use python context, you need to install the external dependencies
 ## References
 
 ### Papers
+
+#### PhD Dissertations
+
+- Eckert, Marie-Lena. “Optimization for Fluid Simulation and Reconstruction of Real-World Flow Phenomena (Optimierung für Fluidsimulationen und Rekonstruktion von realen Strömungsphänomenen).” (2019).
 
 #### Course Notes
 

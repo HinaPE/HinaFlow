@@ -212,16 +212,24 @@ res = (%d, %d, %d)
 void HinaFlow::Python::PhiFlowSmoke::CreateScalarFieldFromHoudiniVDB(const std::string& name, const std::string& match_field, const std::string& external_volume_name)
 {
     UT_WorkBuffer expr;
+//     expr.sprintf(R"(
+// center = %s.sampled_elements.center
+// tmp = np.zeros((center.shape.spatial.sizes[0], center.shape.spatial.sizes[1], center.shape.spatial.sizes[2]))
+// for i in range(center.shape.spatial.sizes[0]):
+//     for j in range(center.shape.spatial.sizes[1]):
+//         for k in range(center.shape.spatial.sizes[2]):
+//             ct = center.x[i].y[j].z[k]
+//             tmp[i,j,k] = %s.sample((float(ct[0]), float(ct[1]), float(ct[2])))
+// %s = CenteredGrid(values=tensor(tmp, spatial('x,y,z')), boundary=%s.boundary, bounds=%s.bounds, resolution=%s.resolution)
+// )", match_field.c_str(), external_volume_name.c_str(), name.c_str(), match_field.c_str(), match_field.c_str(), match_field.c_str());
+
     expr.sprintf(R"(
-center = %s.sampled_elements.center
-tmp = np.zeros((center.shape.spatial.sizes[0], center.shape.spatial.sizes[1], center.shape.spatial.sizes[2]))
-for i in range(center.shape.spatial.sizes[0]):
-    for j in range(center.shape.spatial.sizes[1]):
-        for k in range(center.shape.spatial.sizes[2]):
-            ct = center.x[i].y[j].z[k]
-            tmp[i,j,k] = %s.sample((float(ct[0]), float(ct[1]), float(ct[2])))
-%s = CenteredGrid(values=tensor(tmp, spatial('x,y,z')), boundary=%s.boundary, bounds=%s.bounds, resolution=%s.resolution)
-)", match_field.c_str(), external_volume_name.c_str(), name.c_str(), match_field.c_str(), match_field.c_str(), match_field.c_str());
+res = %s.resolution()
+for i in range(res[0]):
+    for j in range(res[1]):
+        for k in range(res[2]):
+            value = %s.voxel(index)
+)", external_volume_name.c_str());
     PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
 
     RECORD_EXPRESSION(expr)
@@ -283,14 +291,27 @@ res = (%d, %d)
     RECORD_EXPRESSION(expr)
 }
 
-void HinaFlow::Python::PhiFlowSmoke::FindExternalVolume(const std::string& name, const std::string& path, const int prim_idx)
+void HinaFlow::Python::PhiFlowSmoke::FindExternalVolume(const std::string& name, const std::string& houdini_name, const std::string& path, const int prim_idx)
 {
     UT_WorkBuffer expr;
     expr.sprintf(R"(
 node = hou.node("%s")
 geo = node.geometry()
 %s = geo.prim(%d)
-)", path.c_str(), name.c_str(), prim_idx);
+res = %s.resolution()
+bbox = %s.boundingBox()
+center = bbox.center()
+lc = bbox.minvec()
+uc = bbox.maxvec()
+
+tmp = np.zeros((res[0], res[1], res[2]))
+for i in range(res[0]):
+    for j in range(res[1]):
+        for k in range(res[2]):
+            tmp[i,j,k] = %s.voxel((i,j,k))
+
+%s = CenteredGrid(values=tensor(tmp, spatial('x,y,z')), boundary=extrapolation.ZERO_GRADIENT, bounds=Box(x=(lc[0] + center[0], uc[0] + center[0]), y=(lc[1] + center[1], uc[1] + center[1]), z=(lc[2] + center[2], uc[2] + center[2])), resolution=spatial(x=res[0], y=res[1], z=res[2]))
+)", path.c_str(), houdini_name.c_str(), prim_idx, houdini_name.c_str(), houdini_name.c_str(), houdini_name.c_str(), name.c_str());
     PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
 
     RECORD_EXPRESSION(expr)

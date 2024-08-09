@@ -79,7 +79,7 @@ namespace HinaFlow::Python
 
 
         // Inflow
-        static void FindExternalVolume(const std::string& name, const std::string& path, const int prim_idx);
+        static void FindExternalVolume(const std::string& name, const std::string& houdini_name, const std::string& path, const int prim_idx);
         static void CreateSphereInflow(const std::string& name, const std::string& match_field, const UT_Vector3& center = {0, 0, 0}, const float radius = 0.1);
         static void CreateSphereInflow2D(const std::string& name, const std::string& match_field, const UT_Vector2& center = {0, 0}, const float radius = 0.1);
 

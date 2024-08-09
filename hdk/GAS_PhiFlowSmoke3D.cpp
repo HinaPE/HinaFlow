@@ -76,7 +76,7 @@ bool GAS_PhiFlowSmoke3D::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, S
         HinaFlow::Python::PhiFlowSmoke::DebugMode(getDebugMode());
         HinaFlow::Python::PhiFlowSmoke::ImportHou();
         HinaFlow::Python::PhiFlowSmoke::ImportPhiFlow(HinaFlow::Python::PhiFlowSmoke::Backend::Torch);
-        HinaFlow::Python::PhiFlowSmoke::FindExternalVolume("Houdini_SOURCE", getSourceVolumePath().toStdString(), static_cast<int>(getSourcePrimIndex()));
+        HinaFlow::Python::PhiFlowSmoke::FindExternalVolume("SOURCE", "Houdini_SOURCE", getSourceVolumePath().toStdString(), static_cast<int>(getSourcePrimIndex()));
         HinaFlow::Python::PhiFlowSmoke::CreateScalarField(
             "DENSITY",
             {resx, resy, resz},
@@ -92,9 +92,9 @@ bool GAS_PhiFlowSmoke3D::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, S
             HinaFlow::Python::PhiFlowSmoke::Extrapolation::Dirichlet,
             0);
         HinaFlow::Python::PhiFlowSmoke::CreateSphereInflow("INFLOW", "DENSITY", {0, 0, 0}, 0.1);
-        HinaFlow::Python::PhiFlowSmoke::CreateScalarFieldFromHoudiniVDB("SOURCE", "DENSITY", "Houdini_SOURCE");
-        if (S)
-            HinaFlow::Python::PhiFlowSmoke::FetchScalarField("SOURCE", S);
+        // HinaFlow::Python::PhiFlowSmoke::CreateScalarFieldFromHoudiniVDB("SOURCE", "DENSITY", "Houdini_SOURCE");
+        // if (S)
+            // HinaFlow::Python::PhiFlowSmoke::FetchScalarField("SOURCE", S);
 
         UT_WorkBuffer expr;
         expr.sprintf(R"(

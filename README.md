@@ -6,6 +6,19 @@ HinaFlow is a Houdini HDK based, open-source framework targeted at fluid simulat
 
 HinaFlow is a recursive acronym for "**H**inaFlow **i**s **n**ot **a** **F**luid **L**earning **O**ptimization **W**orkflow".
 
+## Key Features
+
+**Differentiable Fluid Solver and Even Deep Learning based Fluid Solver in Houdini**
+
+HinaFlow runs on two contexts: Houdini and Python. Either context uses Houdini hdk nodes. (No Houdini's Python node)
+- When running on pure Houdini, you can purely use HinaFlow's HDK nodes as a extended Houdini Digital Asset. There is no difference from the original Houdini workflow.
+- When running on Python context, you can take full advantage of the whole Python ecosystem, including PyTorch, TensorFlow, NumPy, etc, and build your own fluid simulation pipeline.
+- The two contexts are fully compatible with each other. You can switch between them at any time.
+
+For example, you can easily create a **Differentiable Fluid Solver** using PyTorch, or even create a **FluidGAN** using PyTorch.
+
+In Hinaflow, we mainly use [phiflow](https://github.com/tum-pbs/PhiFlow.git) as the backend for fluid simulation, which is a fully differentiable fluid simulation framework, with PyTorch, JAX and TensorFlow backends.
+
 ## Build Instructions
 
 **Before building the project, make sure you have installed [Houdini](https://www.sidefx.com/).**
@@ -22,6 +35,19 @@ HinaFlow is a recursive acronym for "**H**inaFlow **i**s **n**ot **a** **F**luid
     cmake --build build
     ```
 - Finally, open Houdini, create a DOP network, then you can find `HinaFlow` nodes in the tab menu under Digital Assets directory.
+
+**Setup python(hython) context for Houdini**
+
+If you want to use python context, you need to install the external dependencies for houdini built-in python (i.e. hython)
+
+- Install pip for hython, and install torch and phiflow (or other necessary packages you want)
+    ```shell
+    curl https://bootstrap.pypa.io/get-pip.py -o ./get-pip.py
+    hython get-pip.py
+    hython -m pip install --upgrade pip setuptools
+    hython -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 # Note: change torch version according to your cuda version
+    hython -m pip install phiflow
+    ```
 
 ## References
 
@@ -53,18 +79,3 @@ HinaFlow is a recursive acronym for "**H**inaFlow **i**s **n**ot **a** **F**luid
 - [mantaflow](https://github.com/tum-pbs/mantaflow.git)
 - [CubbyFlow](https://github.com/CubbyFlow/CubbyFlow.git)
 - [SPlisHSPlasH](https://github.com/InteractiveComputerGraphics/SPlisHSPlasH.git)
-
-### Others
-Install external dependencies for houdini built-in python (i.e. hython)
-> Note: change torch version according to your cuda version
-```shell
-curl https://bootstrap.pypa.io/get-pip.py -o ./get-pip.py
-hython get-pip.py
-hython -m pip install --upgrade pip setuptools
-hython -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-hython -m pip install phiflow
-```
-
-
-- https://vimeo.com/241073394
-- https://vimeo.com/241333072

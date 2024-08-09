@@ -15,7 +15,7 @@
 
 #include <GAS/GAS_SubSolver.h>
 
-class GAS_SolverPBF : public GAS_SubSolver
+class GAS_SolverPBF final : public GAS_SubSolver
 {
 public:
     inline static const bool GEN_NODE = true;

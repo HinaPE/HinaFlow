@@ -79,7 +79,7 @@ namespace HinaFlow::Internal::Python::PhiFlowSmoke
         else if (TARGET->getYRes() == 1)
             WriteField2D(TARGET, SOURCE, 2, 0);
         else if (TARGET->getZRes() == 1)
-            WriteField2DNoThread(TARGET, SOURCE, 1, 0);
+            WriteField2D(TARGET, SOURCE, 1, 0);
         else
             WriteField3D(TARGET, SOURCE);
     }

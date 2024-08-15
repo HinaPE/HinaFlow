@@ -309,7 +309,7 @@ void HinaFlow::Python::PhiFlowSmoke::CreateSphereInflow2D(const std::string& nam
     RECORD_EXPRESSION(expr)
 }
 
-void HinaFlow::Python::PhiFlowSmoke::CreateInflowFluids(const std::string& name,const std::string& target, const std::string& source)
+void HinaFlow::Python::PhiFlowSmoke::CreateInflowFluids(const std::string& name, const std::string& target, const std::string& source)
 {
     UT_WorkBuffer expr;
     expr.sprintf(R"(
@@ -435,6 +435,48 @@ _vc.vector['y'].data.native('x,y').cpu().numpy().flatten().tolist()
         Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getZField(), result.myDoubleArray);
     else
         Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getYField(), result.myDoubleArray);
+}
+
+UT_Vector3 HinaFlow::Python::PhiFlowSmoke::FetchFieldSize(const std::string& name)
+{
+    UT_WorkBuffer expr;
+    PY_Result result;
+    expr.sprintf(R"(
+size = %s.resolution.shape.size
+res = [1, 1, 1]
+res[0] = int(%s.bounds.size[0])
+res[1] = int(%s.bounds.size[1])
+if size == 3:
+    res[2] = int(%s.bounds.size[2])
+)", name.c_str(), name.c_str(), name.c_str(), name.c_str());
+    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+
+    expr.sprintf(R"(
+res
+)");
+    result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
+    return {static_cast<float>(result.myDoubleArray[0]), static_cast<float>(result.myDoubleArray[1]), static_cast<float>(result.myDoubleArray[2])};
+}
+
+UT_Vector3I HinaFlow::Python::PhiFlowSmoke::FetchFieldResolution(const std::string& name)
+{
+    UT_WorkBuffer expr;
+    PY_Result result;
+    expr.sprintf(R"(
+size = %s.resolution.shape.size
+res = [1, 1, 1]
+res[0] = int(%s.resolution[0])
+res[1] = int(%s.resolution[1])
+if size == 3:
+    res[2] = int(%s.resolution[2])
+)", name.c_str(), name.c_str(), name.c_str(), name.c_str());
+    PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+
+    expr.sprintf(R"(
+res
+)");
+    result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::INT_ARRAY);
+    return {result.myIntArray[0], result.myIntArray[1], result.myIntArray[2]};
 }
 
 void HinaFlow::Python::PhiFlowSmoke::DebugHoudiniVolume(const std::string& name)

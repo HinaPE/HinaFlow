@@ -85,6 +85,9 @@ namespace HinaFlow::Python
         static void FetchScalarField2D(const std::string& name, SIM_ScalarField* FIELD);
         static void FetchVectorField2D(const std::string& name, SIM_VectorField* FIELD);
 
+        static UT_Vector3 FetchFieldSize(const std::string& name);
+        static UT_Vector3I FetchFieldResolution(const std::string& name);
+
 
         // Debug
         static void DebugHoudiniVolume(const std::string& name);

@@ -22,6 +22,7 @@ set(DOP_NODEs
         DebugSPHKernel
         PhiFlowSmoke2D
         PhiFlowSmoke3D
+        PhiFlowVisulizeField
         SolveDiffusion
         SolvePoisson
         SolverFLIP

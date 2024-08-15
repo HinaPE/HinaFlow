@@ -1,5 +1,5 @@
-#ifndef GAS_SOLVERPHIFLOW_H
-#define GAS_SOLVERPHIFLOW_H
+#ifndef GAS_PHIFLOWVISULIZEFIELD_H
+#define GAS_PHIFLOWVISULIZEFIELD_H
 
 /******************************************************************************
  *
@@ -15,13 +15,13 @@
 
 #include <GAS/GAS_SubSolver.h>
 
-class GAS_SolverPhiFlow final : public GAS_SubSolver
+class GAS_PhiFlowVisulizeField final : public GAS_SubSolver
 {
 public:
     inline static const bool GEN_NODE = true;
-    inline static const char* DOP_NAME = "SolverPhiFlow";
-    inline static const char* DOP_ENGLISH = "Solver PhiFlow";
-    inline static const char* DATANAME = "SolverPhiFlow";
+    inline static const char* DOP_NAME = "PhiFlowVisulizeField";
+    inline static const char* DOP_ENGLISH = "PhiFlow Visulize Field";
+    inline static const char* DATANAME = "PhiFlowVisulizeField";
     inline static const bool UNIQUE_DATANAME = false;
 
     GETSET_DATA_FUNCS_I("StartFrame", StartFrame)
@@ -29,12 +29,12 @@ public:
     GETSET_DATA_FUNCS_S("Code", Code)
 
 protected:
-    explicit GAS_SolverPhiFlow(const SIM_DataFactory* factory): BaseClass(factory) {}
+    explicit GAS_PhiFlowVisulizeField(const SIM_DataFactory* factory): BaseClass(factory) {}
     bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) final;
     static const SIM_DopDescription* getDopDescription();
     DECLARE_STANDARD_GETCASTTOTYPE();
-    DECLARE_DATAFACTORY(GAS_SolverPhiFlow, GAS_SubSolver, "This is a PhiFlow Solver provided by HinaFlow.", getDopDescription());
+    DECLARE_DATAFACTORY(GAS_PhiFlowVisulizeField, GAS_SubSolver, "This is a PhiFlow Visulize Field provided by HinaFlow.", getDopDescription());
 };
 
 
-#endif //GAS_SOLVERPHIFLOW_H
+#endif //GAS_PHIFLOWVISULIZEFIELD_H

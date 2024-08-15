@@ -20,6 +20,7 @@ set(PYTHON_FILES
 )
 set(DOP_NODEs
         DebugSPHKernel
+        PhiFlowFetchField
         PhiFlowSmoke2D
         PhiFlowSmoke3D
         PhiFlowVisulizeField

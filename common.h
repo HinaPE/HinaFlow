@@ -29,6 +29,7 @@
 #include <PRM/PRM_Default.h>
 #include <PRM/PRM_Include.h>
 #include <PRM/PRM_TemplateBuilder.h>
+#include <PRM/PRM_SpareData.h>
 
 #include <OP/OP_Operator.h>
 #include <OP/OP_AutoLockInputs.h>
@@ -74,7 +75,28 @@
 #define GAS_NAME_COLOR "color"
 #define ACTIVATE_GAS_COLOR static PRM_Name ColorName(GAS_NAME_COLOR, "Color"); static PRM_Default ColorNameDefault(0, GAS_NAME_COLOR); PRMs.emplace_back(PRM_STRING, 1, &ColorName, &ColorNameDefault);
 
+
+#define GAS_NAME_SCALAR_FIELD_1 "scalar_field_1"
+#define ACTIVATE_GAS_SCALAR_FIELD_1 static PRM_Name ScalarField1Name(GAS_NAME_SCALAR_FIELD_1, "Scalar Field 1"); static PRM_Default ScalarField1NameDefault(0, GAS_NAME_SCALAR_FIELD_1); PRMs.emplace_back(PRM_STRING, 1, &ScalarField1Name, &ScalarField1NameDefault);
+#define GAS_NAME_SCALAR_FIELD_2 "scalar_field_2"
+#define ACTIVATE_GAS_SCALAR_FIELD_2 static PRM_Name ScalarField2Name(GAS_NAME_SCALAR_FIELD_2, "Scalar Field 2"); static PRM_Default ScalarField2NameDefault(0, GAS_NAME_SCALAR_FIELD_2); PRMs.emplace_back(PRM_STRING, 1, &ScalarField2Name, &ScalarField2NameDefault);
+#define GAS_NAME_SCALAR_FIELD_3 "scalar_field_3"
+#define ACTIVATE_GAS_SCALAR_FIELD_3 static PRM_Name ScalarField3Name(GAS_NAME_SCALAR_FIELD_3, "Scalar Field 3"); static PRM_Default ScalarField3NameDefault(0, GAS_NAME_SCALAR_FIELD_3); PRMs.emplace_back(PRM_STRING, 1, &ScalarField3Name, &ScalarField3NameDefault);
+#define GAS_NAME_SCALAR_FIELD_4 "scalar_field_4"
+#define ACTIVATE_GAS_SCALAR_FIELD_4 static PRM_Name ScalarField4Name(GAS_NAME_SCALAR_FIELD_4, "Scalar Field 4"); static PRM_Default ScalarField4NameDefault(0, GAS_NAME_SCALAR_FIELD_4); PRMs.emplace_back(PRM_STRING, 1, &ScalarField4Name, &ScalarField4NameDefault);
+
+#define GAS_NAME_VECTOR_FIELD_1 "vector_field_1"
+#define ACTIVATE_GAS_VECTOR_FIELD_1 static PRM_Name VectorField1Name(GAS_NAME_VECTOR_FIELD_1, "Vector Field 1"); static PRM_Default VectorField1NameDefault(0, GAS_NAME_VECTOR_FIELD_1); PRMs.emplace_back(PRM_STRING, 1, &VectorField1Name, &VectorField1NameDefault);
+#define GAS_NAME_VECTOR_FIELD_2 "vector_field_2"
+#define ACTIVATE_GAS_VECTOR_FIELD_2 static PRM_Name VectorField2Name(GAS_NAME_VECTOR_FIELD_2, "Vector Field 2"); static PRM_Default VectorField2NameDefault(0, GAS_NAME_VECTOR_FIELD_2); PRMs.emplace_back(PRM_STRING, 1, &VectorField2Name, &VectorField2NameDefault);
+#define GAS_NAME_VECTOR_FIELD_3 "vector_field_3"
+#define ACTIVATE_GAS_VECTOR_FIELD_3 static PRM_Name VectorField3Name(GAS_NAME_VECTOR_FIELD_3, "Vector Field 3"); static PRM_Default VectorField3NameDefault(0, GAS_NAME_VECTOR_FIELD_3); PRMs.emplace_back(PRM_STRING, 1, &VectorField3Name, &VectorField3NameDefault);
+#define GAS_NAME_VECTOR_FIELD_4 "vector_field_4"
+#define ACTIVATE_GAS_VECTOR_FIELD_4 static PRM_Name VectorField4Name(GAS_NAME_VECTOR_FIELD_4, "Vector Field 4"); static PRM_Default VectorField4NameDefault(0, GAS_NAME_VECTOR_FIELD_4); PRMs.emplace_back(PRM_STRING, 1, &VectorField4Name, &VectorField4NameDefault);
+
+#define PARAMETER_FILE(NAME, DEFAULT_VALUE) static PRM_Name NAME(#NAME, #NAME); static PRM_Default Default##NAME(0, DEFAULT_VALUE); PRMs.emplace_back(PRM_CMDFILE, 1, &NAME, &Default##NAME);
 #define PARAMETER_STRING(NAME, DEFAULT_VALUE) static PRM_Name NAME(#NAME, #NAME); static PRM_Default Default##NAME(0, DEFAULT_VALUE); PRMs.emplace_back(PRM_STRING, 1, &NAME, &Default##NAME);
+#define PARAMETER_STRING_PYTHON(NAME, DEFAULT_VALUE) static PRM_Name NAME(#NAME, #NAME); static PRM_Default Default##NAME(0, DEFAULT_VALUE); PRMs.emplace_back(PRM_STRING, 1, &NAME, &Default##NAME, nullptr, nullptr, nullptr, &PRM_SpareData::stringEditorLangPython);
 #define PARAMETER_PATH(NAME, DEFAULT_VALUE) static PRM_Name NAME(#NAME, #NAME); PRMs.emplace_back(PRM_STRING, PRM_TYPE_DYNAMIC_PATH, 1, &NAME);
 #define PARAMETER_BOOL(NAME, DEFAULT_VALUE) static PRM_Name NAME(#NAME, #NAME); static PRM_Default Default##NAME(DEFAULT_VALUE); PRMs.emplace_back(PRM_TOGGLE, 1, &NAME, &Default##NAME);
 #define PARAMETER_INT(NAME, DEFAULT_VALUE) static PRM_Name NAME(#NAME, #NAME); static PRM_Default Default##NAME(DEFAULT_VALUE); PRMs.emplace_back(PRM_INT, 1, &NAME, &Default##NAME);

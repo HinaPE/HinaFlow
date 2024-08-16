@@ -1,5 +1,5 @@
-#ifndef GAS_PHIFLOWFETCHFIELD_H
-#define GAS_PHIFLOWFETCHFIELD_H
+#ifndef GAS_PHIFLOWFREESOLVE_H
+#define GAS_PHIFLOWFREESOLVE_H
 
 /******************************************************************************
  *
@@ -15,25 +15,26 @@
 
 #include <GAS/GAS_SubSolver.h>
 
-class GAS_PhiFlowFetchField final : public GAS_SubSolver
+class GAS_PhiFlowFreeSolve final : public GAS_SubSolver
 {
 public:
     inline static const bool GEN_NODE = true;
-    inline static const char* DOP_NAME = "PhiFlowFetchField";
-    inline static const char* DOP_ENGLISH = "PhiFlow Fetch Field";
-    inline static const char* DATANAME = "PhiFlowFetchField";
+    inline static const char* DOP_NAME = "PhiFlowFreeSolve";
+    inline static const char* DOP_ENGLISH = "PhiFlow Free Solve";
+    inline static const char* DATANAME = "PhiFlowFreeSolve";
     inline static const bool UNIQUE_DATANAME = false;
 
     GETSET_DATA_FUNCS_I("StartFrame", StartFrame)
-    GETSET_DATA_FUNCS_S("Target", Target)
+    GETSET_DATA_FUNCS_S("InitCode", InitCode)
+    GETSET_DATA_FUNCS_S("StepCode", StepCode)
 
 protected:
-    explicit GAS_PhiFlowFetchField(const SIM_DataFactory* factory): BaseClass(factory) {}
+    explicit GAS_PhiFlowFreeSolve(const SIM_DataFactory* factory): BaseClass(factory) {}
     bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) final;
     static const SIM_DopDescription* getDopDescription();
     DECLARE_STANDARD_GETCASTTOTYPE();
-    DECLARE_DATAFACTORY(GAS_PhiFlowFetchField, GAS_SubSolver, "This is a PhiFlow Fetch Field provided by HinaFlow.", getDopDescription());
+    DECLARE_DATAFACTORY(GAS_PhiFlowFreeSolve, GAS_SubSolver, "This is a PhiFlow Free Solve provided by HinaFlow.", getDopDescription());
 };
 
 
-#endif //GAS_PHIFLOWFETCHFIELD_H
+#endif //GAS_PHIFLOWFREESOLVE_H

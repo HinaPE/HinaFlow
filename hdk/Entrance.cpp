@@ -4,6 +4,7 @@
 
 #include "GAS_DebugSPHKernel.h"
 #include "GAS_PhiFlowFetchField.h"
+#include "GAS_PhiFlowFreeSolve.h"
 #include "GAS_PhiFlowSmoke2D.h"
 #include "GAS_PhiFlowSmoke3D.h"
 #include "GAS_PhiFlowVisulizeField.h"
@@ -20,6 +21,7 @@ void initializeSIM(void*)
 {
     IMPLEMENT_DATAFACTORY(GAS_DebugSPHKernel)
     IMPLEMENT_DATAFACTORY(GAS_PhiFlowFetchField)
+    IMPLEMENT_DATAFACTORY(GAS_PhiFlowFreeSolve)
     IMPLEMENT_DATAFACTORY(GAS_PhiFlowSmoke2D)
     IMPLEMENT_DATAFACTORY(GAS_PhiFlowSmoke3D)
     IMPLEMENT_DATAFACTORY(GAS_PhiFlowVisulizeField)

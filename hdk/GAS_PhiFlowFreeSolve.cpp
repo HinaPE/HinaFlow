@@ -1,4 +1,4 @@
-#include "GAS_SolverPhiFlow.h"
+#include "GAS_PhiFlowFreeSolve.h"
 
 /******************************************************************************
  *
@@ -17,7 +17,7 @@
 #include <fstream>
 #include <sstream>
 
-const SIM_DopDescription* GAS_SolverPhiFlow::getDopDescription()
+const SIM_DopDescription* GAS_PhiFlowFreeSolve::getDopDescription()
 {
     static std::vector<PRM_Template> PRMs;
     PRMs.clear();
@@ -37,7 +37,7 @@ const SIM_DopDescription* GAS_SolverPhiFlow::getDopDescription()
     return &DESC;
 }
 
-bool GAS_SolverPhiFlow::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep)
+bool GAS_PhiFlowFreeSolve::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep)
 {
     const int frame = engine.getSimulationFrame(time);
     if (frame < getStartFrame())

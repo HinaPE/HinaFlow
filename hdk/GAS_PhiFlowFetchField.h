@@ -26,6 +26,8 @@ public:
 
     GETSET_DATA_FUNCS_I("StartFrame", StartFrame)
     GETSET_DATA_FUNCS_S("Target", Target)
+    GETSET_DATA_FUNCS_S("BATCH", BATCH)
+    GETSET_DATA_FUNCS_I("BATCH_NUM", BATCH_NUM)
 
 protected:
     explicit GAS_PhiFlowFetchField(const SIM_DataFactory* factory): BaseClass(factory) {}

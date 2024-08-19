@@ -321,12 +321,21 @@ void HinaFlow::Python::PhiFlowSmoke::CreateInflowFluids(const std::string& name,
 }
 
 
-void HinaFlow::Python::PhiFlowSmoke::FetchScalarField(const std::string& name, SIM_ScalarField* FIELD)
+void HinaFlow::Python::PhiFlowSmoke::FetchScalarField(const std::string& name, SIM_ScalarField* FIELD, const std::string& batch, const int batch_num)
 {
     UT_WorkBuffer expr;
-    expr.sprintf(R"(
-%s.data.native('x,y,z').cpu().numpy().flatten().tolist()
+    if (batch.empty())
+    {
+        expr.sprintf(R"(
+%s.data.native('x,y,z').cpu().detach().numpy().flatten().tolist()
 )", name.c_str());
+    }
+    else
+    {
+        expr.sprintf(R"(
+%s.%s[%d].data.native('x,y,z').cpu().detach().numpy().flatten().tolist()
+)", name.c_str(), batch.c_str(), batch_num);
+    }
     const PY_Result result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
     if (result.myResultType != PY_Result::DOUBLE_ARRAY)
     {
@@ -334,20 +343,32 @@ void HinaFlow::Python::PhiFlowSmoke::FetchScalarField(const std::string& name, S
         return;
     }
     Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getField(), result.myDoubleArray);
+
+    RECORD_EXPRESSION(expr)
 }
 
-void HinaFlow::Python::PhiFlowSmoke::FetchVectorField(const std::string& name, SIM_VectorField* FIELD)
+void HinaFlow::Python::PhiFlowSmoke::FetchVectorField(const std::string& name, SIM_VectorField* FIELD, const std::string& batch, const int batch_num)
 {
     UT_WorkBuffer expr;
     PY_Result result;
 
-    expr.sprintf(R"(
+    if (batch.empty())
+    {
+        expr.sprintf(R"(
 _vc = %s.at_centers()
 )", name.c_str());
+    }
+    else
+    {
+        expr.sprintf(R"(
+_vc = %s.%s[%d].at_centers()
+)", name.c_str(), batch.c_str(), batch_num);
+    }
     PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+    RECORD_EXPRESSION(expr)
 
     expr.sprintf(R"(
-_vc.vector['x'].data.native('x,y,z').cpu().numpy().flatten().tolist()
+_vc.vector['x'].data.native('x,y,z').cpu().detach().numpy().flatten().tolist()
 )");
     result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
     if (result.myResultType != PY_Result::DOUBLE_ARRAY)
@@ -356,10 +377,11 @@ _vc.vector['x'].data.native('x,y,z').cpu().numpy().flatten().tolist()
         return;
     }
     Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getXField(), result.myDoubleArray);
+    RECORD_EXPRESSION(expr)
 
 
     expr.sprintf(R"(
-_vc.vector['y'].data.native('x,y,z').cpu().numpy().flatten().tolist()
+_vc.vector['y'].data.native('x,y,z').cpu().detach().numpy().flatten().tolist()
 )");
     result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
     if (result.myResultType != PY_Result::DOUBLE_ARRAY)
@@ -368,10 +390,11 @@ _vc.vector['y'].data.native('x,y,z').cpu().numpy().flatten().tolist()
         return;
     }
     Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getYField(), result.myDoubleArray);
+    RECORD_EXPRESSION(expr)
 
 
     expr.sprintf(R"(
-_vc.vector['z'].data.native('x,y,z').cpu().numpy().flatten().tolist()
+_vc.vector['z'].data.native('x,y,z').cpu().detach().numpy().flatten().tolist()
 )");
     result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
     if (result.myResultType != PY_Result::DOUBLE_ARRAY)
@@ -380,14 +403,24 @@ _vc.vector['z'].data.native('x,y,z').cpu().numpy().flatten().tolist()
         return;
     }
     Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getZField(), result.myDoubleArray);
+    RECORD_EXPRESSION(expr)
 }
 
-void HinaFlow::Python::PhiFlowSmoke::FetchScalarField2D(const std::string& name, SIM_ScalarField* FIELD)
+void HinaFlow::Python::PhiFlowSmoke::FetchScalarField2D(const std::string& name, SIM_ScalarField* FIELD, const std::string& batch, const int batch_num)
 {
     UT_WorkBuffer expr;
-    expr.sprintf(R"(
-%s.data.native('x,y').cpu().numpy().flatten().tolist()
+    if (batch.empty())
+    {
+        expr.sprintf(R"(
+%s.data.native('x,y').cpu().detach().numpy().flatten().tolist()
 )", name.c_str());
+    }
+    else
+    {
+        expr.sprintf(R"(
+%s.%s[%d].data.native('x,y').cpu().detach().numpy().flatten().tolist()
+)", name.c_str(), batch.c_str(), batch_num);
+    }
     const PY_Result result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
     if (result.myResultType != PY_Result::DOUBLE_ARRAY)
     {
@@ -395,20 +428,31 @@ void HinaFlow::Python::PhiFlowSmoke::FetchScalarField2D(const std::string& name,
         return;
     }
     Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getField(), result.myDoubleArray);
+    RECORD_EXPRESSION(expr)
 }
 
-void HinaFlow::Python::PhiFlowSmoke::FetchVectorField2D(const std::string& name, SIM_VectorField* FIELD)
+void HinaFlow::Python::PhiFlowSmoke::FetchVectorField2D(const std::string& name, SIM_VectorField* FIELD, const std::string& batch, const int batch_num)
 {
     UT_WorkBuffer expr;
     PY_Result result;
 
-    expr.sprintf(R"(
+    if (batch.empty())
+    {
+        expr.sprintf(R"(
 _vc = %s.at_centers()
 )", name.c_str());
+    }
+    else
+    {
+        expr.sprintf(R"(
+_vc = %s.%s[%d].at_centers()
+)", name.c_str(), batch.c_str(), batch_num);
+    }
     PYrunPythonStatementsAndExpectNoErrors(expr.buffer());
+    RECORD_EXPRESSION(expr)
 
     expr.sprintf(R"(
-_vc.vector['x'].data.native('x,y').cpu().numpy().flatten().tolist()
+_vc.vector['x'].data.native('x,y').cpu().detach().numpy().flatten().tolist()
 )");
     result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
     if (result.myResultType != PY_Result::DOUBLE_ARRAY)
@@ -420,10 +464,11 @@ _vc.vector['x'].data.native('x,y').cpu().numpy().flatten().tolist()
         Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getYField(), result.myDoubleArray);
     else
         Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getXField(), result.myDoubleArray);
+    RECORD_EXPRESSION(expr)
 
 
     expr.sprintf(R"(
-_vc.vector['y'].data.native('x,y').cpu().numpy().flatten().tolist()
+_vc.vector['y'].data.native('x,y').cpu().detach().numpy().flatten().tolist()
 )");
     result = PYrunPythonExpressionAndExpectNoErrors(expr.buffer(), PY_Result::DOUBLE_ARRAY);
     if (result.myResultType != PY_Result::DOUBLE_ARRAY)
@@ -435,6 +480,7 @@ _vc.vector['y'].data.native('x,y').cpu().numpy().flatten().tolist()
         Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getZField(), result.myDoubleArray);
     else
         Internal::Python::PhiFlowSmoke::WriteHoudiniField(FIELD->getYField(), result.myDoubleArray);
+    RECORD_EXPRESSION(expr)
 }
 
 UT_Vector3 HinaFlow::Python::PhiFlowSmoke::FetchFieldSize(const std::string& name)

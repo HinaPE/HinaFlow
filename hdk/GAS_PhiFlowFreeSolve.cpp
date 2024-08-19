@@ -24,6 +24,7 @@ const SIM_DopDescription* GAS_PhiFlowFreeSolve::getDopDescription()
     PARAMETER_INT(StartFrame, 1)
     PARAMETER_FILE(InitCode, "")
     PARAMETER_FILE(StepCode, "")
+    PARAMETER_BOOL(DebugMode, false)
     PRMs.emplace_back();
 
     static SIM_DopDescription DESC(GEN_NODE,
@@ -42,6 +43,8 @@ bool GAS_PhiFlowFreeSolve::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj,
     const int frame = engine.getSimulationFrame(time);
     if (frame < getStartFrame())
         return true;
+
+    HinaFlow::Python::PhiFlowSmoke::DebugMode(getDebugMode());
 
     if (frame == getStartFrame())
     {

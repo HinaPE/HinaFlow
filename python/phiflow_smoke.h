@@ -80,10 +80,10 @@ namespace HinaFlow::Python
 
 
         // Fetch fields
-        static void FetchScalarField(const std::string& name, SIM_ScalarField* FIELD);
-        static void FetchVectorField(const std::string& name, SIM_VectorField* FIELD);
-        static void FetchScalarField2D(const std::string& name, SIM_ScalarField* FIELD);
-        static void FetchVectorField2D(const std::string& name, SIM_VectorField* FIELD);
+        static void FetchScalarField(const std::string& name, SIM_ScalarField* FIELD, const std::string& batch = "", const int batch_num = 0);
+        static void FetchVectorField(const std::string& name, SIM_VectorField* FIELD, const std::string& batch = "", const int batch_num = 0);
+        static void FetchScalarField2D(const std::string& name, SIM_ScalarField* FIELD, const std::string& batch = "", const int batch_num = 0);
+        static void FetchVectorField2D(const std::string& name, SIM_VectorField* FIELD, const std::string& batch = "", const int batch_num = 0);
 
         static UT_Vector3 FetchFieldSize(const std::string& name);
         static UT_Vector3I FetchFieldResolution(const std::string& name);

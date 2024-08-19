@@ -21,6 +21,8 @@ const SIM_DopDescription* GAS_PhiFlowFetchField::getDopDescription()
     PRMs.clear();
     ACTIVATE_GAS_FIELD
     PARAMETER_STRING(Target, "")
+    PARAMETER_STRING(BATCH, "")
+    PARAMETER_INT(BATCH_NUM, 0)
     PRMs.emplace_back();
 
     static SIM_DopDescription DESC(GEN_NODE,
@@ -56,9 +58,9 @@ bool GAS_PhiFlowFetchField::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj
         F->setDivisions(HinaFlow::Python::PhiFlowSmoke::FetchFieldResolution(name));
         F->setTwoDField(is2D);
         if (is2D)
-            HinaFlow::Python::PhiFlowSmoke::FetchScalarField2D(name, F);
+            HinaFlow::Python::PhiFlowSmoke::FetchScalarField2D(name, F, getBATCH().toStdString(), static_cast<int>(getBATCH_NUM()));
         else
-            HinaFlow::Python::PhiFlowSmoke::FetchScalarField(name, F);
+            HinaFlow::Python::PhiFlowSmoke::FetchScalarField(name, F, getBATCH().toStdString(), static_cast<int>(getBATCH_NUM()));
     }
 
     if (V)
@@ -67,9 +69,9 @@ bool GAS_PhiFlowFetchField::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj
         V->setDivisions(HinaFlow::Python::PhiFlowSmoke::FetchFieldResolution(name));
         V->setTwoDField(is2D);
         if (is2D)
-            HinaFlow::Python::PhiFlowSmoke::FetchVectorField2D(name, V);
+            HinaFlow::Python::PhiFlowSmoke::FetchVectorField2D(name, V, getBATCH().toStdString(), static_cast<int>(getBATCH_NUM()));
         else
-            HinaFlow::Python::PhiFlowSmoke::FetchVectorField(name, V);
+            HinaFlow::Python::PhiFlowSmoke::FetchVectorField(name, V, getBATCH().toStdString(), static_cast<int>(getBATCH_NUM()));
     }
 
     return true;

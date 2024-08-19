@@ -27,6 +27,7 @@ public:
     GETSET_DATA_FUNCS_I("StartFrame", StartFrame)
     GETSET_DATA_FUNCS_S("InitCode", InitCode)
     GETSET_DATA_FUNCS_S("StepCode", StepCode)
+    GETSET_DATA_FUNCS_B("DebugMode", DebugMode)
 
 protected:
     explicit GAS_PhiFlowFreeSolve(const SIM_DataFactory* factory): BaseClass(factory) {}

@@ -44,10 +44,9 @@ bool GAS_PhiFlowFreeSolve::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj,
     if (frame < getStartFrame())
         return true;
 
-    HinaFlow::Python::PhiFlowSmoke::DebugMode(getDebugMode());
-
     if (frame == getStartFrame())
     {
+        HinaFlow::Python::PhiFlowSmoke::DebugMode(getDebugMode());
         std::ifstream init(getInitCode().toStdString());
         std::stringstream init_buffer;
         init_buffer << init.rdbuf();

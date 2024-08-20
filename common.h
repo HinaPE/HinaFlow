@@ -1,4 +1,5 @@
-#ifndef HINAFLOW_COMMON_H
+pub
+pu#ifndef HINAFLOW_COMMON_H
 #define HINAFLOW_COMMON_H
 
 /******************************************************************************
@@ -48,9 +49,7 @@
 
 #include <SYS/SYS_Math.h>
 
-#include <Python.h>
 #include <PY/PY_Python.h>
-#include <PY/PY_CPythonAPI.h>
 
 
 #define ACTIVATE_GAS_GEOMETRY static PRM_Name GeometryName(GAS_NAME_GEOMETRY, SIM_GEOMETRY_DATANAME); static PRM_Default GeometryNameDefault(0, SIM_GEOMETRY_DATANAME); PRMs.emplace_back(PRM_STRING, 1, &GeometryName, &GeometryNameDefault);

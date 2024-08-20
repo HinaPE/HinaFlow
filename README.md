@@ -76,6 +76,7 @@ If you want to use python context, you need to install the external dependencies
 - Gregson, James, Michael Krimerman, Matthias B. Hullin and Wolfgang Heidrich. “Stochastic tomography and its applications in 3D imaging of mixing fluids.” ACM Transactions on Graphics (TOG) 31 (2012): 1 - 10.
 - Eckert, Marie-Lena, Wolfgang Heidrich and Nils Thürey. “Coupled Fluid Density and Motion from Single Views.” Computer Graphics Forum 37 (2018): n. pag.
 - Inglis, Tiffany, Marie-Lena Eckert, James Gregson and Nils Thürey. “Primal‐Dual Optimization for Fluids.” Computer Graphics Forum 36 (2016): n. pag.
+- Holl, Philipp, Vladlen Koltun and Nils Thuerey. “Learning to Control PDEs with Differentiable Physics.” ArXiv abs/2001.07457 (2020): n. pag.
 
 ### Repositories
 - [phiflow](https://github.com/tum-pbs/PhiFlow.git)

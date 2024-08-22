@@ -29,7 +29,7 @@ const SIM_DopDescription* GAS_PhiFlowSmoke3D::getDopDescription()
     PARAMETER_VECTOR_FLOAT_N(Center, 3, 0, 0, 0)
     PARAMETER_BOOL(DebugMode, false)
 
-    PARAMETER_PATH(SourceVolumePath)
+    PARAMETER_PATH(SourceVolumePath, "")
     PARAMETER_INT(SourcePrimIndex, 0)
     PRMs.emplace_back();
 

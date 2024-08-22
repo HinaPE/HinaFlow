@@ -14,7 +14,7 @@
 
 #include "common.h"
 
-void HinaFlow::Possion::Solve(const Input& input, const Param& param, Result& result)
+void HinaFlow::Poisson::Solve(const Input& input, const Param& param, Result& result)
 {
     const int size = static_cast<int>(input.MARKER->getField()->field()->numVoxels());
     const UT_Vector3I res = input.MARKER->getField()->getVoxelRes();
@@ -127,7 +127,7 @@ void HinaFlow::Possion::Solve(const Input& input, const Param& param, Result& re
 }
 
 
-namespace HinaFlow::Internal::Possion
+namespace HinaFlow::Internal::Poisson
 {
     void KnBuildLaplaceMatrixPartial(UT_SparseMatrixF& A, const SIM_IndexField* MARKER, const UT_JobInfo& info)
     {
@@ -249,14 +249,14 @@ namespace HinaFlow::Internal::Possion
     THREADED_METHOD3(, PRESSURE->getField()->shouldMultiThread(), KnSubtractPressureGradient, SIM_VectorField*, FLOW, const SIM_ScalarField*, PRESSURE, const int, AXIS);
 }
 
-void HinaFlow::Possion::SolveMultiThreaded(const Input& input, const Param& param, Result& result)
+void HinaFlow::Poisson::SolveMultiThreaded(const Input& input, const Param& param, Result& result)
 {
     const int size = static_cast<int>(input.MARKER->getField()->field()->numVoxels());
 
 
     // Build A
     UT_SparseMatrixF A(size, size);
-    Internal::Possion::KnBuildLaplaceMatrix(A, input.MARKER);
+    Internal::Poisson::KnBuildLaplaceMatrix(A, input.MARKER);
     A.compile();
     UT_SparseMatrixRowF AImpl;
     AImpl.buildFrom(A);
@@ -265,7 +265,7 @@ void HinaFlow::Possion::SolveMultiThreaded(const Input& input, const Param& para
 
     // Build b (Store Divergence Optional)
     UT_VectorF b(0, size - 1);
-    Internal::Possion::KnBuildRhs(b, input.FLOW, input.MARKER, result.DIVERGENCE);
+    Internal::Poisson::KnBuildRhs(b, input.FLOW, input.MARKER, result.DIVERGENCE);
 
 
     // Solve System
@@ -274,14 +274,149 @@ void HinaFlow::Possion::SolveMultiThreaded(const Input& input, const Param& para
 
 
     // Store Pressure
-    Internal::Possion::KnStorePressure(result.PRESSURE, x);
+    Internal::Poisson::KnStorePressure(result.PRESSURE, x);
 
 
     // Subtract Pressure Gradient
     for (const int AXIS : GET_AXIS_ITER(input.FLOW))
-        Internal::Possion::KnSubtractPressureGradient(result.FLOW, result.PRESSURE, AXIS);
+        Internal::Poisson::KnSubtractPressureGradient(result.FLOW, result.PRESSURE, AXIS);
 }
 
-void HinaFlow::Possion::SolveDifferential(const Input& input, const Param& param, Result& result) { Solve(input, param, result); }
+void HinaFlow::Poisson::SolveDifferential(const Input& input, const Param& param, Result& result) { Solve(input, param, result); }
 
-void HinaFlow::Possion::SolveDifferentialMultiThreaded(const Input& input, const Param& param, Result& result) { SolveMultiThreaded(input, param, result); }
+void HinaFlow::Poisson::SolveDifferentialMultiThreaded(const Input& input, const Param& param, Result& result) { SolveMultiThreaded(input, param, result); }
+
+void HinaFlow::Poisson::SolveFastDomain(const Input& input, const Param& param, Result& result, const SIM_IndexField* ADAPTIVE_DOMAIN)
+{
+    const float h = input.MARKER->getVoxelSize().maxComponent();
+
+    int size = 0;
+    {
+        UT_VoxelArrayIteratorI vit;
+        vit.setConstArray(ADAPTIVE_DOMAIN->getField()->field());
+        for (vit.rewind(); !vit.atEnd(); vit.advance())
+        {
+            if (vit.getValue() != -1)
+                ++size;
+            else
+            {
+                const UT_Vector3I cell(vit.x(), vit.y(), vit.z());
+                for (const int AXIS : GET_AXIS_ITER(ADAPTIVE_DOMAIN->getField()))
+                {
+                    constexpr int dir0 = 0, dir1 = 1;
+                    const UT_Vector3I face0 = SIM::FieldUtils::cellToFaceMap(cell, AXIS, dir0);
+                    const UT_Vector3I face1 = SIM::FieldUtils::cellToFaceMap(cell, AXIS, dir1);
+                    SIM::FieldUtils::setFieldValue(*input.FLOW->getField(AXIS), face0, 0);
+                    SIM::FieldUtils::setFieldValue(*input.FLOW->getField(AXIS), face1, 0);
+                }
+            }
+        }
+    }
+
+    // Build A
+    UT_SparseMatrixF A(size, size);
+    {
+        UT_VoxelArrayIteratorI vit;
+        vit.setConstArray(ADAPTIVE_DOMAIN->getField()->field());
+        for (vit.rewind(); !vit.atEnd(); vit.advance())
+        {
+            const UT_Vector3I cell(vit.x(), vit.y(), vit.z());
+            const int idx = static_cast<int>(SIM::FieldUtils::getFieldValue(*ADAPTIVE_DOMAIN->getField(), cell));
+            if (idx == -1)
+                continue;
+
+            for (const int AXIS : GET_AXIS_ITER(ADAPTIVE_DOMAIN->getField()))
+            {
+                for (const int DIR : {0, 1})
+                {
+                    UT_Vector3I cell0 = SIM::FieldUtils::cellToCellMap(cell, AXIS, DIR);
+                    if (!CHECK_CELL_VALID(ADAPTIVE_DOMAIN->getField(), cell0))
+                        continue;
+
+                    const int idx0 = static_cast<int>(SIM::FieldUtils::getFieldValue(*ADAPTIVE_DOMAIN->getField(), cell0));
+
+                    if (idx0 == -1)
+                        continue;
+                    A.addToElement(idx, idx, 1.0f);
+                    A.addToElement(idx, idx0, -1.0f);
+                }
+            }
+        }
+    }
+    A.compile();
+    UT_SparseMatrixRowF AImpl;
+    AImpl.buildFrom(A);
+    UT_VectorF x(0, size - 1);
+
+
+    // Build b (Store Divergence Optional)
+    UT_VectorF b(0, size - 1);
+    {
+        UT_VoxelArrayIteratorI vit;
+        vit.setConstArray(ADAPTIVE_DOMAIN->getField()->field());
+        for (vit.rewind(); !vit.atEnd(); vit.advance())
+        {
+            const UT_Vector3I cell(vit.x(), vit.y(), vit.z());
+
+            fpreal32 divergence = 0;
+            if (const int idx = static_cast<int>(vit.getValue()); idx != -1)
+            {
+                for (const int AXIS : GET_AXIS_ITER(ADAPTIVE_DOMAIN->getField()))
+                {
+                    constexpr int dir0 = 0, dir1 = 1;
+                    const UT_Vector3I face0 = SIM::FieldUtils::cellToFaceMap(cell, AXIS, dir0);
+                    const UT_Vector3I face1 = SIM::FieldUtils::cellToFaceMap(cell, AXIS, dir1);
+                    const fpreal32 v0 = SIM::FieldUtils::getFieldValue(*input.FLOW->getField(AXIS), face0);
+                    const fpreal32 v1 = SIM::FieldUtils::getFieldValue(*input.FLOW->getField(AXIS), face1);
+                    divergence += (v1 - v0) * h;
+                }
+                b(idx) = -divergence;
+            }
+
+            if (result.DIVERGENCE)
+                result.DIVERGENCE->getField()->fieldNC()->setValue(cell, divergence);
+        }
+    }
+
+
+    // Solve System
+    x = b;
+    AImpl.solveConjugateGradient(x, b, nullptr);
+
+
+    // Store Pressure
+    {
+        result.PRESSURE->getField()->makeConstant(0);
+        UT_VoxelArrayIteratorI vit;
+        vit.setConstArray(ADAPTIVE_DOMAIN->getField()->field());
+        for (vit.rewind(); !vit.atEnd(); vit.advance())
+        {
+            const UT_Vector3I cell(vit.x(), vit.y(), vit.z());
+
+            if (const int idx = static_cast<int>(SIM::FieldUtils::getFieldValue(*ADAPTIVE_DOMAIN->getField(), cell)); idx != -1)
+                SIM::FieldUtils::setFieldValue(*result.PRESSURE->getField(), cell, x(idx));
+        }
+    }
+
+
+    // Subtract Pressure Gradient
+    for (const int AXIS : GET_AXIS_ITER(input.FLOW))
+    {
+        UT_VoxelArrayIteratorF vit;
+        vit.setArray(result.FLOW->getField(AXIS)->fieldNC());
+        for (vit.rewind(); !vit.atEnd(); vit.advance())
+        {
+            const UT_Vector3I face(vit.x(), vit.y(), vit.z());
+            constexpr int DIR_0 = 0, DIR_1 = 1;
+            const UT_Vector3I cell0 = SIM::FieldUtils::faceToCellMap(face, AXIS, DIR_0);
+            const UT_Vector3I cell1 = SIM::FieldUtils::faceToCellMap(face, AXIS, DIR_1);
+            // This will clamp the bounds to fit within the voxel array, using the border type to resolve out of range values.
+            const fpreal32 p0 = result.PRESSURE->getField()->field()->getValue(static_cast<int>(cell0.x()), static_cast<int>(cell0.y()), static_cast<int>(cell0.z()));
+            // This will clamp the bounds to fit within the voxel array, using the border type to resolve out of range values.
+            const fpreal32 p1 = result.PRESSURE->getField()->field()->getValue(static_cast<int>(cell1.x()), static_cast<int>(cell1.y()), static_cast<int>(cell1.z()));
+            fpreal32 v = input.FLOW->getField(AXIS)->field()->getValue(vit.x(), vit.y(), vit.z());
+            v -= (p1 - p0) / h;
+            vit.setValue(v);
+        }
+    }
+}

@@ -19,6 +19,7 @@ set(PYTHON_FILES
         phiflow_smoke
 )
 set(DOP_NODEs
+        AdaptiveDomain
         DebugSPHKernel
         PhiFlowFetchField
         PhiFlowFreeSolve

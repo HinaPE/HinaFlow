@@ -345,10 +345,10 @@ void HinaFlow::FLIP::SolvePressure(const Input& input, const Param& param, Resul
 {
     Internal::FLIP::BuildMarker(input.MARKER, input.FLOW);
     input.FLOW->enforceBoundary();
-    Possion::Input I{input.FLOW, input.MARKER};
-    Possion::Param P;
-    Possion::Result R{input.FLOW, result.PRESSURE, result.DIVERGENCE};
-    Possion::SolveMultiThreaded(I, P, R);
+    Poisson::Input I{input.FLOW, input.MARKER};
+    Poisson::Param P;
+    Poisson::Result R{input.FLOW, result.PRESSURE, result.DIVERGENCE};
+    Poisson::SolveMultiThreaded(I, P, R);
     input.FLOW->enforceBoundary();
 }
 

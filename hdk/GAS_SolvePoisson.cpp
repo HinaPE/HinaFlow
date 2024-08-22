@@ -23,6 +23,7 @@ const SIM_DopDescription* GAS_SolvePoisson::getDopDescription()
     ACTIVATE_GAS_DIVERGENCE
     ACTIVATE_GAS_PRESSURE
     ACTIVATE_GAS_STENCIL
+    ACTIVATE_GAS_ADAPTIVE_DOMAIN
 
     static std::array<PRM_Name, 5> PCG_METHOD = {
         PRM_Name("0", "PCG_NONE"),
@@ -36,6 +37,7 @@ const SIM_DopDescription* GAS_SolvePoisson::getDopDescription()
     static PRM_ChoiceList CLPCG_METHOD(PRM_CHOICELIST_SINGLE, PCG_METHOD.data());
     PRMs.emplace_back(PRM_ORD, 1, &PCG_METHODName, &PCG_METHODNameDefault, &CLPCG_METHOD);
     PARAMETER_BOOL(MultiThreaded, false)
+    PARAMETER_BOOL(UseAdaptiveDomain, false)
     PRMs.emplace_back();
 
     static SIM_DopDescription DESC(GEN_NODE,
@@ -80,8 +82,8 @@ bool GAS_SolvePoisson::solveGasSubclass(SIM_Engine&, SIM_Object* obj, SIM_Time, 
     */
     HinaFlow::FILL_FIELD(MARKER, static_cast<exint>(HinaFlow::CellType::Fluid));
 
-    HinaFlow::Possion::Input input{V, MARKER};
-    HinaFlow::Possion::Param param;
+    HinaFlow::Poisson::Input input{V, MARKER};
+    HinaFlow::Poisson::Param param;
     switch (getPCG_METHOD())
     {
     case 0: param.preconditioner = SIM_RawField::PCG_METHOD::PCG_NONE;
@@ -95,12 +97,17 @@ bool GAS_SolvePoisson::solveGasSubclass(SIM_Engine&, SIM_Object* obj, SIM_Time, 
     default:
         throw std::runtime_error("Invalid PCG_METHOD");
     }
-    HinaFlow::Possion::Result result{V, PRS, DIV};
+    HinaFlow::Poisson::Result result{V, PRS, DIV};
 
-    if (getMultiThreaded())
-        HinaFlow::Possion::SolveMultiThreaded(input, param, result);
+    if (getUseAdaptiveDomain())
+    {
+        const SIM_IndexField* ADAPTIVE_DOMAIN = getIndexField(obj, GAS_NAME_ADAPTIVE_DOMAIN);
+        HinaFlow::Poisson::SolveFastDomain(input, param, result, ADAPTIVE_DOMAIN);
+    }
+    else if (getMultiThreaded())
+        HinaFlow::Poisson::SolveMultiThreaded(input, param, result);
     else
-        HinaFlow::Possion::Solve(input, param, result);
+        HinaFlow::Poisson::Solve(input, param, result);
 
     return true;
 }

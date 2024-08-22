@@ -2,6 +2,7 @@
 #include <OP/OP_Operator.h>
 #include <OP/OP_OperatorTable.h>
 
+#include "GAS_AdaptiveDomain.h"
 #include "GAS_DebugSPHKernel.h"
 #include "GAS_PhiFlowFetchField.h"
 #include "GAS_PhiFlowFreeSolve.h"
@@ -19,6 +20,7 @@
 
 void initializeSIM(void*)
 {
+    IMPLEMENT_DATAFACTORY(GAS_AdaptiveDomain)
     IMPLEMENT_DATAFACTORY(GAS_DebugSPHKernel)
     IMPLEMENT_DATAFACTORY(GAS_PhiFlowFetchField)
     IMPLEMENT_DATAFACTORY(GAS_PhiFlowFreeSolve)

@@ -1,5 +1,4 @@
-pub
-pu#ifndef HINAFLOW_COMMON_H
+#ifndef HINAFLOW_COMMON_H
 #define HINAFLOW_COMMON_H
 
 /******************************************************************************
@@ -74,6 +73,8 @@ pu#ifndef HINAFLOW_COMMON_H
 #define GAS_NAME_COLOR "color"
 #define ACTIVATE_GAS_COLOR static PRM_Name ColorName(GAS_NAME_COLOR, "Color"); static PRM_Default ColorNameDefault(0, GAS_NAME_COLOR); PRMs.emplace_back(PRM_STRING, 1, &ColorName, &ColorNameDefault);
 
+#define GAS_NAME_ADAPTIVE_DOMAIN "adaptive_domain"
+#define ACTIVATE_GAS_ADAPTIVE_DOMAIN static PRM_Name AdaptiveDomainName(GAS_NAME_ADAPTIVE_DOMAIN, "Adaptive Domain"); static PRM_Default AdaptiveDomainNameDefault(0, GAS_NAME_ADAPTIVE_DOMAIN); PRMs.emplace_back(PRM_STRING, 1, &AdaptiveDomainName, &AdaptiveDomainNameDefault);
 
 #define GAS_NAME_SCALAR_FIELD_1 "scalar_field_1"
 #define ACTIVATE_GAS_SCALAR_FIELD_1 static PRM_Name ScalarField1Name(GAS_NAME_SCALAR_FIELD_1, "Scalar Field 1"); static PRM_Default ScalarField1NameDefault(0, GAS_NAME_SCALAR_FIELD_1); PRMs.emplace_back(PRM_STRING, 1, &ScalarField1Name, &ScalarField1NameDefault);

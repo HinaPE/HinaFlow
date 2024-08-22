@@ -1,6 +1,6 @@
 # Find Houdini
 if (MSVC)
-    set(Houdini_PATH "C:/Program Files/Side Effects Software/Houdini 20.5.278")
+    set(Houdini_PATH "C:/Program Files/Side Effects Software/Houdini 20.5.332")
 elseif (APPLE)
     set(Houdini_PATH "/Applications/Houdini/Houdini20.5.278/Frameworks/Houdini.framework/Versions/20.5/Resources")
 endif ()

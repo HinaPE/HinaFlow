@@ -19,7 +19,7 @@
 
 namespace HinaFlow
 {
-    struct Possion
+    struct Poisson
     {
         struct Input
         {
@@ -44,6 +44,8 @@ namespace HinaFlow
 
         static void SolveDifferential(const Input& input, const Param& param, Result& result);
         static void SolveDifferentialMultiThreaded(const Input& input, const Param& param, Result& result);
+
+        static void SolveFastDomain(const Input& input, const Param& param, Result& result, const SIM_IndexField* ADAPTIVE_DOMAIN);
     };
 }
 

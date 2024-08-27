@@ -24,6 +24,10 @@ public:
     inline static const char* DATANAME = "ReadNPZFiles";
     inline static const bool UNIQUE_DATANAME = false;
 
+    GETSET_DATA_FUNCS_I("StartFrame", StartFrame)
+    GETSET_DATA_FUNCS_I("MaxFrame", MaxFrame)
+    GETSET_DATA_FUNCS_S("FilePath", FilePath)
+
 protected:
     explicit GAS_ReadNPZFiles(const SIM_DataFactory* factory): BaseClass(factory) {}
     bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) final;

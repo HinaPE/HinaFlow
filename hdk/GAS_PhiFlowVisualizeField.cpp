@@ -1,4 +1,4 @@
-#include "GAS_PhiFlowVisulizeField.h"
+#include "GAS_PhiFlowVisualizeField.h"
 
 /******************************************************************************
  *
@@ -15,7 +15,7 @@
 #include "common.h"
 #include "python/phiflow_smoke.h"
 
-const SIM_DopDescription* GAS_PhiFlowVisulizeField::getDopDescription()
+const SIM_DopDescription* GAS_PhiFlowVisualizeField::getDopDescription()
 {
     static std::vector<PRM_Template> PRMs;
     PRMs.clear();
@@ -37,7 +37,7 @@ const SIM_DopDescription* GAS_PhiFlowVisulizeField::getDopDescription()
     return &DESC;
 }
 
-bool GAS_PhiFlowVisulizeField::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep)
+bool GAS_PhiFlowVisualizeField::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep)
 {
     const int frame = engine.getSimulationFrame(time);
     if (frame < getStartFrame())

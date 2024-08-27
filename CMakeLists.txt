@@ -25,7 +25,8 @@ set(DOP_NODEs
         PhiFlowFreeSolve
         PhiFlowSmoke2D
         PhiFlowSmoke3D
-        PhiFlowVisulizeField
+        PhiFlowVisualizeField
+        ReadNPZFiles
         SolveDiffusion
         SolvePoisson
         SolverFLIP

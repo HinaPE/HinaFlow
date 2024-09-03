@@ -61,8 +61,3 @@ target_link_libraries(SIM_HinaFlow PUBLIC Houdini)
 target_include_directories(SIM_HinaFlow PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 houdini_configure_target(SIM_HinaFlow)
-
-
-add_subdirectory(python/pybind11-2.13.5)
-pybind11_add_module(cmake_example python/main.cpp)
-target_compile_definitions(cmake_example PRIVATE VERSION_INFO=1.1)

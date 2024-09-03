@@ -7,3 +7,5 @@ geo
 tga
 video
 render
+*.egg-info
+build

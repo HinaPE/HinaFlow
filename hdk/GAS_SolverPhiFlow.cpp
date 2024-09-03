@@ -13,7 +13,7 @@
 
 
 #include "common.h"
-#include "python/phiflow_smoke.h"
+#include "../src/phiflow_smoke.h"
 #include <fstream>
 #include <sstream>
 

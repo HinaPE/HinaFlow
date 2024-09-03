@@ -11,12 +11,10 @@ set(SRC_FILES
         flip
         image
         pbf
+        phiflow_smoke
         poisson
         tomography
         wave
-)
-set(PYTHON_FILES
-        phiflow_smoke
 )
 set(DOP_NODEs
         AdaptiveDomain
@@ -47,10 +45,6 @@ foreach (NODE ${SRC_FILES})
     list(APPEND SOURCES src/${NODE}.cpp src/${NODE}.h)
 endforeach ()
 
-foreach (NODE ${PYTHON_FILES})
-    list(APPEND SOURCES python/${NODE}.cpp python/${NODE}.h)
-endforeach ()
-
 foreach (NODE ${DOP_NODEs})
     list(APPEND SOURCES hdk/GAS_${NODE}.cpp hdk/GAS_${NODE}.h)
     configure_file(./icon.png ${HOUDINI_INSTALL_DIR}/config/icons/DOP_${NODE}.png COPYONLY)
@@ -67,3 +61,8 @@ target_link_libraries(SIM_HinaFlow PUBLIC Houdini)
 target_include_directories(SIM_HinaFlow PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 houdini_configure_target(SIM_HinaFlow)
+
+
+add_subdirectory(python/pybind11-2.13.5)
+pybind11_add_module(cmake_example python/main.cpp)
+target_compile_definitions(cmake_example PRIVATE VERSION_INFO=1.1)

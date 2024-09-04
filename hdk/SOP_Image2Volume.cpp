@@ -86,6 +86,13 @@ const char* const SOP_Image2VolumeVerb::theDsFile = R"THEDSFILE(
         disablewhen "{ useidattrib == 0 }"
     }
     parm {
+        name        "npz_path"
+        cppname     "NPZPath"
+        label       "NPZ Path"
+        type        file
+        default     { "" }
+    }
+    parm {
         name    "pack"
         label   "Pack and Instance"
         type    toggle
@@ -194,6 +201,9 @@ void SOP_Image2VolumeVerb::cook(const CookParms& cookparms) const
     GU_Detail* output_gdp = cookparms.gdh().gdpNC();
     const GU_Detail* source = cookparms.inputGeo(0);
     const GU_Detail* target = cookparms.inputGeo(1);
+
+    auto str = sopparms.getNPZPath();
+    std::cout << "NPZ Path: " << str << '\n';
 
     std::cout << "SOP_Image2VolumeVerb::cook" << '\n';
 

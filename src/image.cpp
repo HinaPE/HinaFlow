@@ -25,12 +25,18 @@ void HinaFlow::Image::Render(SIM_VectorField* TARGET, const SIM_ScalarField* FIE
     FIELD->getBBox(bbox);
 
     const UT_Vector3 center = view.getP();
-    UT_Vector3 right_dir = cross(view.getD(),UT_Vector3{0, 1, 0});
+    UT_Vector3 right_dir = cross(view.getD(), UT_Vector3{0, 1, 0});
     UT_Vector3 up_dir = cross(right_dir, view.getD());
     right_dir.normalize();
     up_dir.normalize();
 
-    const UT_BlockedRange2D range( 0, resx, 0, resy );
+    if (view.getD() == UT_Vector3{0, -1, 0} || view.getD() == UT_Vector3{0, 1, 0})
+    {
+        right_dir = UT_Vector3{1, 0, 0};
+        up_dir = UT_Vector3{0, 0, -1};
+    }
+
+    const UT_BlockedRange2D range(0, resx, 0, resy);
     const UT_Vector2i offset = {resx / 2, resy / 2};
     UTserialFor(range, [&](const UT_BlockedRange2D<int>& r)
     {

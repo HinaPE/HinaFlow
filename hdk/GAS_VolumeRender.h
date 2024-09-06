@@ -24,7 +24,9 @@ public:
     inline static auto DATANAME = "VolumeRender";
     static constexpr bool UNIQUE_DATANAME = false;
 
-    GETSET_DATA_FUNCS_F("Step", Step);
+    GETSET_DATA_FUNCS_F("Step", Step)
+    GETSET_DATA_FUNCS_F("FocalLength", FocalLength)
+    GETSET_DATA_FUNCS_I("View", View)
 
 protected:
     explicit GAS_VolumeRender(const SIM_DataFactory* factory): BaseClass(factory) {}

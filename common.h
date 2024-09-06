@@ -49,6 +49,7 @@
 #include <UT/UT_StringHolder.h>
 
 #include <VGEO/VGEO_Ray.h>
+#include <BRAY/BRAY_Interface.h>
 
 #include <SYS/SYS_Math.h>
 

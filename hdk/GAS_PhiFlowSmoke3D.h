@@ -18,11 +18,11 @@
 class GAS_PhiFlowSmoke3D final : public GAS_SubSolver
 {
 public:
-    inline static const bool GEN_NODE = true;
-    inline static const char* DOP_NAME = "PhiFlowSmoke3D";
-    inline static const char* DOP_ENGLISH = "PhiFlow Smoke 3D";
-    inline static const char* DATANAME = "PhiFlowSmoke3D";
-    inline static const bool UNIQUE_DATANAME = false;
+    static constexpr bool GEN_NODE = true;
+    inline static auto DOP_NAME = "PhiFlowSmoke3D";
+    inline static auto DOP_ENGLISH = "PhiFlow Smoke 3D";
+    inline static auto DATANAME = "PhiFlowSmoke3D";
+    static constexpr bool UNIQUE_DATANAME = false;
 
     GETSET_DATA_FUNCS_I("StartFrame", StartFrame)
     GETSET_DATA_FUNCS_V3("Resolution", Resolution)
@@ -34,7 +34,7 @@ public:
 
 protected:
     explicit GAS_PhiFlowSmoke3D(const SIM_DataFactory* factory): BaseClass(factory) {}
-    bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) final;
+    bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) override;
     static const SIM_DopDescription* getDopDescription();
     DECLARE_STANDARD_GETCASTTOTYPE();
     DECLARE_DATAFACTORY(GAS_PhiFlowSmoke3D, GAS_SubSolver, "This is a PhiFlow Smoke 3D Solver provided by HinaFlow.", getDopDescription());

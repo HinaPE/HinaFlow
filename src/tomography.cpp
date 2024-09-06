@@ -12,6 +12,4 @@
  ******************************************************************************/
 
 
-void HinaFlow::Render(SIM_ScalarField* D, const VGEO_Ray& Ray, const float step)
-{
-}
+#include "common.h"

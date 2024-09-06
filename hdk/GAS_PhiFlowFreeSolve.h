@@ -18,11 +18,11 @@
 class GAS_PhiFlowFreeSolve final : public GAS_SubSolver
 {
 public:
-    inline static const bool GEN_NODE = true;
-    inline static const char* DOP_NAME = "PhiFlowFreeSolve";
-    inline static const char* DOP_ENGLISH = "PhiFlow Free Solve";
-    inline static const char* DATANAME = "PhiFlowFreeSolve";
-    inline static const bool UNIQUE_DATANAME = false;
+    static constexpr bool GEN_NODE = true;
+    inline static auto DOP_NAME = "PhiFlowFreeSolve";
+    inline static auto DOP_ENGLISH = "PhiFlow Free Solve";
+    inline static auto DATANAME = "PhiFlowFreeSolve";
+    static constexpr bool UNIQUE_DATANAME = false;
 
     GETSET_DATA_FUNCS_I("StartFrame", StartFrame)
     GETSET_DATA_FUNCS_S("InitCode", InitCode)
@@ -31,7 +31,7 @@ public:
 
 protected:
     explicit GAS_PhiFlowFreeSolve(const SIM_DataFactory* factory): BaseClass(factory) {}
-    bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) final;
+    bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) override;
     static const SIM_DopDescription* getDopDescription();
     DECLARE_STANDARD_GETCASTTOTYPE();
     DECLARE_DATAFACTORY(GAS_PhiFlowFreeSolve, GAS_SubSolver, "This is a PhiFlow Free Solve provided by HinaFlow.", getDopDescription());

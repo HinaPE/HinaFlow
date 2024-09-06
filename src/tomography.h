@@ -16,15 +16,12 @@
 #include <SIM/SIM_ScalarField.h>
 #include <SIM/SIM_VectorField.h>
 #include <SIM/SIM_IndexField.h>
-#include <VGEO/VGEO_Ray.h>
 
 namespace HinaFlow
 {
     struct Tomography
     {
     };
-
-    void Render(SIM_ScalarField* D, const VGEO_Ray& Ray, const float step);
 }
 
 

@@ -18,11 +18,11 @@
 class GAS_PhiFlowFetchField final : public GAS_SubSolver
 {
 public:
-    inline static const bool GEN_NODE = true;
-    inline static const char* DOP_NAME = "PhiFlowFetchField";
-    inline static const char* DOP_ENGLISH = "PhiFlow Fetch Field";
-    inline static const char* DATANAME = "PhiFlowFetchField";
-    inline static const bool UNIQUE_DATANAME = false;
+    static constexpr bool GEN_NODE = true;
+    inline static auto DOP_NAME = "PhiFlowFetchField";
+    inline static auto DOP_ENGLISH = "PhiFlow Fetch Field";
+    inline static auto DATANAME = "PhiFlowFetchField";
+    static constexpr bool UNIQUE_DATANAME = false;
 
     GETSET_DATA_FUNCS_I("StartFrame", StartFrame)
     GETSET_DATA_FUNCS_S("Target", Target)
@@ -31,7 +31,7 @@ public:
 
 protected:
     explicit GAS_PhiFlowFetchField(const SIM_DataFactory* factory): BaseClass(factory) {}
-    bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) final;
+    bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) override;
     static const SIM_DopDescription* getDopDescription();
     DECLARE_STANDARD_GETCASTTOTYPE();
     DECLARE_DATAFACTORY(GAS_PhiFlowFetchField, GAS_SubSolver, "This is a PhiFlow Fetch Field provided by HinaFlow.", getDopDescription());

@@ -12,11 +12,15 @@
  *
  ******************************************************************************/
 
+#include <SIM/SIM_ScalarField.h>
+#include <SIM/SIM_VectorField.h>
+#include <VGEO/VGEO_Ray.h>
 
 namespace HinaFlow
 {
     struct Image
     {
+        static void Render(SIM_VectorField* TARGET, const SIM_ScalarField* FIELD, const VGEO_Ray& ray, const float step, const int layer = 0);
     };
 }
 

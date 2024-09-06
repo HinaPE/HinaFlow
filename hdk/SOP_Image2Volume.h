@@ -18,8 +18,8 @@
 class SOP_Image2Volume : public SOP_Node
 {
 public:
-    inline static const char* DOP_NAME = "Image2Volume";
-    inline static const char* DOP_ENGLISH = "Image to Volume";
+    inline static auto DOP_NAME = "Image2Volume";
+    inline static auto DOP_ENGLISH = "Image to Volume";
 
 public:
     static PRM_Template* buildTemplates();

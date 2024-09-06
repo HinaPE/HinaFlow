@@ -16,6 +16,7 @@
 #include "GAS_SolverPBF.h"
 #include "GAS_SolverPhiFlow.h"
 #include "GAS_SolveWave.h"
+#include "GAS_VolumeRender.h"
 
 #include "SOP_Image2Volume.h"
 
@@ -35,6 +36,7 @@ void initializeSIM(void*)
     IMPLEMENT_DATAFACTORY(GAS_SolverPBF)
     IMPLEMENT_DATAFACTORY(GAS_SolverPhiFlow)
     IMPLEMENT_DATAFACTORY(GAS_SolveWave)
+    IMPLEMENT_DATAFACTORY(GAS_VolumeRender)
 }
 
 

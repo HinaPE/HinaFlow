@@ -18,11 +18,11 @@
 class GAS_PhiFlowVisualizeField final : public GAS_SubSolver
 {
 public:
-    inline static const bool GEN_NODE = true;
-    inline static const char* DOP_NAME = "PhiFlowVisualizeField";
-    inline static const char* DOP_ENGLISH = "PhiFlow Visualize Field";
-    inline static const char* DATANAME = "PhiFlowVisualizeField";
-    inline static const bool UNIQUE_DATANAME = false;
+    static constexpr bool GEN_NODE = true;
+    inline static auto DOP_NAME = "PhiFlowVisualizeField";
+    inline static auto DOP_ENGLISH = "PhiFlow Visualize Field";
+    inline static auto DATANAME = "PhiFlowVisualizeField";
+    static constexpr bool UNIQUE_DATANAME = false;
 
     GETSET_DATA_FUNCS_I("StartFrame", StartFrame)
     GETSET_DATA_FUNCS_S("TargetFieldName", TargetFieldName)
@@ -30,7 +30,7 @@ public:
 
 protected:
     explicit GAS_PhiFlowVisualizeField(const SIM_DataFactory* factory): BaseClass(factory) {}
-    bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) final;
+    bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) override;
     static const SIM_DopDescription* getDopDescription();
     DECLARE_STANDARD_GETCASTTOTYPE();
     DECLARE_DATAFACTORY(GAS_PhiFlowVisualizeField, GAS_SubSolver, "This is a PhiFlow Visualize Field provided by HinaFlow.", getDopDescription());

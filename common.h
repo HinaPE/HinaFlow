@@ -17,6 +17,7 @@
 #include <SIM/SIM_Object.h>
 #include <SIM/SIM_GeometryCopy.h>
 #include <SIM/SIM_DopDescription.h>
+#include <SIM/SIM_GuideShared.h>
 
 #include <SIM/SIM_ScalarField.h>
 #include <SIM/SIM_VectorField.h>
@@ -43,8 +44,11 @@
 
 #include <UT/UT_MultigridArray.h>
 #include <UT/UT_ThreadedAlgorithm.h>
+#include <UT/UT_ParallelUtil.h>
 #include <UT/UT_SparseMatrix.h>
 #include <UT/UT_StringHolder.h>
+
+#include <VGEO/VGEO_Ray.h>
 
 #include <SYS/SYS_Math.h>
 
@@ -183,7 +187,7 @@ namespace HinaFlow
     template <typename FieldType, typename T>
     void FILL_FIELD(FieldType* FIELD, T value)
     {
-        if constexpr (std::is_same_v<T, SIM_VectorField*>)
+        if constexpr (std::is_same_v<FieldType, SIM_VectorField>)
             for (const int AXIS : GET_AXIS_ITER(FIELD))
                 FIELD->getField(AXIS)->makeConstant(value);
         else
@@ -207,6 +211,33 @@ namespace HinaFlow
         result.y() = idx / res.x();
         result.x() = idx - result.y() * res.x();
         return result;
+    }
+
+    template <typename T>
+    UT_Vector3T<T> PROJECT_POINT(const UT_Vector3T<T>& p, const UT_Vector3T<T>& o, const UT_Vector3T<T>& d)
+    {
+        const UT_Vector3T<T> p_o = p - o;
+        const T dist = p_o.dot(d);
+        const UT_Vector3T<T> q = p - dist * d;
+        return q;
+    }
+
+    template <typename T>
+    std::pair<UT_Vector2T<T>, UT_Vector2T<T>> PROJECT_BOUNDINGBOX(const UT_BoundingBoxT<T>& bbox, const VGEO_Ray& ray)
+    {
+        UT_Vector3 ptarray[8]{};
+        bbox.getBBoxPoints(ptarray);
+        UT_Vector3T<T> l(std::numeric_limits<T>::max(), std::numeric_limits<T>::max(), std::numeric_limits<T>::max());
+        UT_Vector3T<T> u(std::numeric_limits<T>::lowest(), std::numeric_limits<T>::lowest(), std::numeric_limits<T>::lowest());
+        for (auto i : ptarray)
+        {
+            const UT_Vector2T<T> _ = PROJECT_POINT(i, ray.getP(), ray.getD());
+            l.x() = std::min(l.x(), _.x());
+            l.y() = std::min(l.y(), _.y());
+            u.x() = std::max(u.x(), _.x());
+            u.y() = std::max(u.y(), _.y());
+        }
+        return {l, u};
     }
 
     inline static std::function Poly6 = [](const UT_Vector3& r, const float h) -> float

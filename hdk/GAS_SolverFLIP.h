@@ -18,15 +18,15 @@
 class GAS_SolverFLIP final : public GAS_SubSolver
 {
 public:
-    inline static const bool GEN_NODE = true;
-    inline static const char* DOP_NAME = "SolverFLIP";
-    inline static const char* DOP_ENGLISH = "Solver FLIP";
-    inline static const char* DATANAME = "SolverFLIP";
-    inline static const bool UNIQUE_DATANAME = false;
+    static constexpr bool GEN_NODE = true;
+    inline static auto DOP_NAME = "SolverFLIP";
+    inline static auto DOP_ENGLISH = "Solver FLIP";
+    inline static auto DATANAME = "SolverFLIP";
+    static constexpr bool UNIQUE_DATANAME = false;
 
 protected:
     explicit GAS_SolverFLIP(const SIM_DataFactory* factory): BaseClass(factory) {}
-    bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) final;
+    bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) override;
     static const SIM_DopDescription* getDopDescription();
     DECLARE_STANDARD_GETCASTTOTYPE();
     DECLARE_DATAFACTORY(GAS_SolverFLIP, GAS_SubSolver, "This is a FLIP Solver provided by HinaFlow.", getDopDescription());

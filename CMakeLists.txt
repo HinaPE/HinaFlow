@@ -31,6 +31,7 @@ set(DOP_NODEs
         SolverPBF
         SolverPhiFlow
         SolveWave
+        VolumeRender
 )
 set(SOP_NODEs
         Image2Volume

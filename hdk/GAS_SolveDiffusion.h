@@ -18,11 +18,11 @@
 class GAS_SolveDiffusion final : public GAS_SubSolver
 {
 public:
-    inline static const bool GEN_NODE = true;
-    inline static const char* DOP_NAME = "SolveDiffusion";
-    inline static const char* DOP_ENGLISH = "Solve Diffusion";
-    inline static const char* DATANAME = "SolveDiffusion";
-    inline static const bool UNIQUE_DATANAME = false;
+    static constexpr bool GEN_NODE = true;
+    inline static auto DOP_NAME = "SolveDiffusion";
+    inline static auto DOP_ENGLISH = "Solve Diffusion";
+    inline static auto DATANAME = "SolveDiffusion";
+    static constexpr bool UNIQUE_DATANAME = false;
 
     GETSET_DATA_FUNCS_I("PCG_METHOD", PCG_METHOD)
     GETSET_DATA_FUNCS_B("MultiThreaded", MultiThreaded)
@@ -30,7 +30,7 @@ public:
 
 protected:
     explicit GAS_SolveDiffusion(const SIM_DataFactory* factory): BaseClass(factory) {}
-    bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) final;
+    bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) override;
     static const SIM_DopDescription* getDopDescription();
     DECLARE_STANDARD_GETCASTTOTYPE();
     DECLARE_DATAFACTORY(GAS_SolveDiffusion, GAS_SubSolver, "This is a Solve Diffusion Solver provided by HinaFlow.", getDopDescription());

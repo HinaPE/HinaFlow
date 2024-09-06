@@ -18,11 +18,11 @@
 class GAS_SolverPBF final : public GAS_SubSolver
 {
 public:
-    inline static const bool GEN_NODE = true;
-    inline static const char* DOP_NAME = "SolverPBF";
-    inline static const char* DOP_ENGLISH = "Solver PBF";
-    inline static const char* DATANAME = "SolverPBF";
-    inline static const bool UNIQUE_DATANAME = false;
+    static constexpr bool GEN_NODE = true;
+    inline static auto DOP_NAME = "SolverPBF";
+    inline static auto DOP_ENGLISH = "Solver PBF";
+    inline static auto DATANAME = "SolverPBF";
+    static constexpr bool UNIQUE_DATANAME = false;
 
     GETSET_DATA_FUNCS_V3("MaxBound", MaxBound)
     GETSET_DATA_FUNCS_B("TopOpen", TopOpen)
@@ -35,7 +35,7 @@ public:
 
 protected:
     explicit GAS_SolverPBF(const SIM_DataFactory* factory): BaseClass(factory) {}
-    bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) final;
+    bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) override;
     static const SIM_DopDescription* getDopDescription();
     DECLARE_STANDARD_GETCASTTOTYPE();
     DECLARE_DATAFACTORY(GAS_SolverPBF, GAS_SubSolver, "This is a Position Based Fluids Solver provided by HinaFlow.", getDopDescription());

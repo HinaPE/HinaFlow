@@ -1,5 +1,5 @@
-#ifndef GAS_VOLUMERENDER_H
-#define GAS_VOLUMERENDER_H
+#ifndef GAS_RECONSTRUCTDENSITY_H
+#define GAS_RECONSTRUCTDENSITY_H
 
 /******************************************************************************
  *
@@ -15,27 +15,23 @@
 
 #include <GAS/GAS_SubSolver.h>
 
-class GAS_VolumeRender final : public GAS_SubSolver
+class GAS_ReconstructDensity final : public GAS_SubSolver
 {
 public:
     static constexpr bool GEN_NODE = true;
-    inline static auto DOP_NAME = "VolumeRender";
-    inline static auto DOP_ENGLISH = "Volume Render";
-    inline static auto DATANAME = "VolumeRender";
+    inline static auto DOP_NAME = "ReconstructDensity";
+    inline static auto DOP_ENGLISH = "Reconstruct Density";
+    inline static auto DATANAME = "ReconstructDensity";
     static constexpr bool UNIQUE_DATANAME = false;
 
-    GETSET_DATA_FUNCS_F("Step", Step)
-    GETSET_DATA_FUNCS_F("FocalLength", FocalLength)
-    GETSET_DATA_FUNCS_I("View", View)
-
 protected:
-    explicit GAS_VolumeRender(const SIM_DataFactory* factory): BaseClass(factory) {}
+    explicit GAS_ReconstructDensity(const SIM_DataFactory* factory): BaseClass(factory) {}
     bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) override;
     static const SIM_DopDescription* getDopDescription();
     SIM_Guide* createGuideObjectSubclass() const override;
     void buildGuideGeometrySubclass(const SIM_RootData& root, const SIM_Options& options, const GU_DetailHandle& gdh, UT_DMatrix4* xform, const SIM_Time& t) const override;
     DECLARE_STANDARD_GETCASTTOTYPE();
-    DECLARE_DATAFACTORY(GAS_VolumeRender, GAS_SubSolver, "This is a Volume Renderer provided by HinaFlow.", getDopDescription());
+    DECLARE_DATAFACTORY(GAS_ReconstructDensity, GAS_SubSolver, "This is for Reconstructing Density provided by HinaFlow.", getDopDescription());
 };
 
-#endif //GAS_VOLUMERENDER_H
+#endif //GAS_RECONSTRUCTDENSITY_H

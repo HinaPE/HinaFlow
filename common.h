@@ -40,6 +40,8 @@
 #include <GU/GU_Detail.h>
 #include <GEO/GEO_PrimVolume.h>
 #include <GU/GU_PrimVolume.h>
+#include <GU/GU_PrimPoly.h>
+#include <GU/GU_PrimSphere.h>
 #include <GU/GU_NeighbourList.h>
 
 #include <UT/UT_MultigridArray.h>

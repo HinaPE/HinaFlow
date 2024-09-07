@@ -21,7 +21,7 @@ namespace HinaFlow
 {
     struct Tomography
     {
-        
+        static void Solve();
     };
 }
 

@@ -27,6 +27,7 @@ public:
     GETSET_DATA_FUNCS_F("Step", Step)
     GETSET_DATA_FUNCS_F("FocalLength", FocalLength)
     GETSET_DATA_FUNCS_I("View", View)
+    GETSET_DATA_FUNCS_V3("Center", Center)
 
 protected:
     explicit GAS_VolumeRender(const SIM_DataFactory* factory): BaseClass(factory) {}

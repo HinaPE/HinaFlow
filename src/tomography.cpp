@@ -13,3 +13,7 @@
 
 
 #include "common.h"
+
+void HinaFlow::Tomography::Solve()
+{
+}

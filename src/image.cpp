@@ -11,7 +11,22 @@
  *
  ******************************************************************************/
 
-#include <BRAY/BRAY_Interface.h>
+
+void KnWriteFieldPartial(SIM_RawField* TARGET, const std::vector<std::vector<float>>& CACHE, const UT_JobInfo& info)
+{
+    UT_VoxelArrayIteratorF vit;
+    vit.setArray(TARGET->fieldNC());
+    vit.setCompressOnExit(true);
+    vit.setPartialRange(info.job(), info.numJobs());
+
+    for (vit.rewind(); !vit.atEnd(); vit.advance())
+    {
+        const UT_Vector3I cell(vit.x(), vit.y(), vit.z());
+        vit.setValue(CACHE[cell[0]][cell[1]]);
+    }
+}
+
+THREADED_METHOD2(, TARGET->shouldMultiThread(), KnWriteField, SIM_RawField*, TARGET, const std::vector<std::vector<float>>&, CACHE);
 
 void HinaFlow::Image::Render(SIM_VectorField* TARGET, const SIM_ScalarField* FIELD, const VGEO_Ray& view, const float step, const int layer)
 {
@@ -36,9 +51,14 @@ void HinaFlow::Image::Render(SIM_VectorField* TARGET, const SIM_ScalarField* FIE
         up_dir = UT_Vector3{0, 0, -1};
     }
 
+    static std::vector<std::vector<float>> cache;
+    cache.resize(resx);
+    for (int i = 0; i < resx; ++i)
+        cache[i].resize(resy);
+
     const UT_BlockedRange2D range(0, resx, 0, resy);
     const UT_Vector2i offset = {resx / 2, resy / 2};
-    UTserialFor(range, [&](const UT_BlockedRange2D<int>& r)
+    UTparallelFor(range, [&](const UT_BlockedRange2D<int>& r)
     {
         for (int i = r.rows().begin(); i < r.rows().end(); ++i)
         {
@@ -51,17 +71,23 @@ void HinaFlow::Image::Render(SIM_VectorField* TARGET, const SIM_ScalarField* FIE
                 float res = 0;
                 if (intersect)
                 {
+                    int sum = 0;
                     while (cur < tmax)
                     {
                         const UT_Vector3 pt = ray.getPt(cur);
                         res += static_cast<float>(FIELD->getValue(pt));
                         cur += step;
+                        ++sum;
                     }
+                    if (sum > 0)
+                        res /= static_cast<float>(sum);
                 }
-                TARGET->getXField()->fieldNC()->setValue(i, j, layer, res);
-                TARGET->getYField()->fieldNC()->setValue(i, j, layer, res);
-                TARGET->getZField()->fieldNC()->setValue(i, j, layer, res);
+                cache[i][j] = res;
             }
         }
     });
+
+    KnWriteField(TARGET->getXField(), cache);
+    KnWriteField(TARGET->getYField(), cache);
+    KnWriteField(TARGET->getZField(), cache);
 }

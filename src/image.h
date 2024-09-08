@@ -20,7 +20,7 @@ namespace HinaFlow
 {
     struct Image
     {
-        static void Render(SIM_VectorField* TARGET, const SIM_ScalarField* FIELD, const VGEO_Ray& view, const float step, const int layer = 0);
+        static void Render(SIM_VectorField* TARGET, const SIM_ScalarField* FIELD, const VGEO_Ray& view, const float step, const float coeff = 1.f);
     };
 }
 

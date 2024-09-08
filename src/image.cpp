@@ -28,7 +28,7 @@ void KnWriteFieldPartial(SIM_RawField* TARGET, const std::vector<std::vector<flo
 
 THREADED_METHOD2(, TARGET->shouldMultiThread(), KnWriteField, SIM_RawField*, TARGET, const std::vector<std::vector<float>>&, CACHE);
 
-void HinaFlow::Image::Render(SIM_VectorField* TARGET, const SIM_ScalarField* FIELD, const VGEO_Ray& view, const float step, const int layer)
+void HinaFlow::Image::Render(SIM_VectorField* TARGET, const SIM_ScalarField* FIELD, const VGEO_Ray& view, const float step, const float coeff)
 {
     const float width = TARGET->getSize().x();
     const float height = TARGET->getSize().y();
@@ -82,7 +82,7 @@ void HinaFlow::Image::Render(SIM_VectorField* TARGET, const SIM_ScalarField* FIE
                     if (sum > 0)
                         res /= static_cast<float>(sum);
                 }
-                cache[i][j] = res;
+                cache[i][j] = coeff * res;
             }
         }
     });

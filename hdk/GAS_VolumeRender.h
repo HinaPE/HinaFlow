@@ -27,14 +27,12 @@ public:
     GETSET_DATA_FUNCS_F("Step", Step)
     GETSET_DATA_FUNCS_F("FocalLength", FocalLength)
     GETSET_DATA_FUNCS_I("View", View)
-    GETSET_DATA_FUNCS_V3("Center", Center)
+    GETSET_DATA_FUNCS_I("Coeff", Coeff)
 
 protected:
     explicit GAS_VolumeRender(const SIM_DataFactory* factory): BaseClass(factory) {}
     bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) override;
     static const SIM_DopDescription* getDopDescription();
-    SIM_Guide* createGuideObjectSubclass() const override;
-    void buildGuideGeometrySubclass(const SIM_RootData& root, const SIM_Options& options, const GU_DetailHandle& gdh, UT_DMatrix4* xform, const SIM_Time& t) const override;
     DECLARE_STANDARD_GETCASTTOTYPE();
     DECLARE_DATAFACTORY(GAS_VolumeRender, GAS_SubSolver, "This is a Volume Renderer provided by HinaFlow.", getDopDescription());
 };

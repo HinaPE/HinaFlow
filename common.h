@@ -15,6 +15,7 @@
 
 #include <SIM/SIM_Engine.h>
 #include <SIM/SIM_Object.h>
+#include <SIM/SIM_PositionSimple.h>
 #include <SIM/SIM_GeometryCopy.h>
 #include <SIM/SIM_DopDescription.h>
 #include <SIM/SIM_GuideShared.h>

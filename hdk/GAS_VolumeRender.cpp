@@ -13,7 +13,6 @@
 
 
 #include "common.h"
-#include "GAS_SolvePoisson.h"
 #include "src/image.h"
 
 const SIM_DopDescription* GAS_VolumeRender::getDopDescription()
@@ -42,8 +41,8 @@ const SIM_DopDescription* GAS_VolumeRender::getDopDescription()
 bool GAS_VolumeRender::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep)
 {
     SIM_VectorField* COLOR = getVectorField(obj, GAS_NAME_COLOR);
-    SIM_ScalarField* D = getScalarField(obj, GAS_NAME_DENSITY);
-    SIM_IndexField* MARKER = getIndexField(obj, GAS_NAME_STENCIL);
+    const SIM_ScalarField* D = getConstScalarField(obj, GAS_NAME_DENSITY);
+    const SIM_IndexField* MARKER = getConstIndexField(obj, GAS_NAME_STENCIL);
 
     if (!HinaFlow::CHECK_NOT_NULL(D, COLOR))
     {
@@ -57,12 +56,10 @@ bool GAS_VolumeRender::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM
     const size_t lsp = path.find_last_of('/');
     SIM_Position* pos = SIM_DATA_GET(*obj, lsp != std::string::npos?path.substr(lsp + 1).c_str():path.c_str(), SIM_Position);
     UT_Vector3 center;
-    UT_Quaternion orient;
     pos->getPosition(center);
-    pos->getOrientation(orient);
-    UT_Vector3 dir = -center;
+    UT_Vector3 dir = center;
     dir.normalize();
 
-    HinaFlow::Image::Render(COLOR, D, VGEO_Ray(center, dir), static_cast<float>(getStep()), getCoeff());
+    HinaFlow::Image::Render(COLOR, D, VGEO_Ray(-center, dir), static_cast<float>(getStep()), static_cast<float>(getCoeff()));
     return true;
 }

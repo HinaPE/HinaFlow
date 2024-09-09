@@ -14,6 +14,7 @@
 
 #include "common.h"
 
-void HinaFlow::Tomography::Solve()
+void HinaFlow::Tomography::Solve(const Input& input, const Param& param, Result& result)
 {
+
 }

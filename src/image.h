@@ -24,5 +24,4 @@ namespace HinaFlow
     };
 }
 
-
 #endif //HINAFLOW_IMAGE_H

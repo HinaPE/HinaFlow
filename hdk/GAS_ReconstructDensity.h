@@ -28,8 +28,6 @@ protected:
     explicit GAS_ReconstructDensity(const SIM_DataFactory* factory): BaseClass(factory) {}
     bool solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM_Time time, SIM_Time timestep) override;
     static const SIM_DopDescription* getDopDescription();
-    SIM_Guide* createGuideObjectSubclass() const override;
-    void buildGuideGeometrySubclass(const SIM_RootData& root, const SIM_Options& options, const GU_DetailHandle& gdh, UT_DMatrix4* xform, const SIM_Time& t) const override;
     DECLARE_STANDARD_GETCASTTOTYPE();
     DECLARE_DATAFACTORY(GAS_ReconstructDensity, GAS_SubSolver, "This is for Reconstructing Density provided by HinaFlow.", getDopDescription());
 };

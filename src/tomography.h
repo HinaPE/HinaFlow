@@ -21,9 +21,29 @@ namespace HinaFlow
 {
     struct Tomography
     {
-        static void Solve();
+        struct Input
+        {
+            const SIM_VectorField* VIEW1 = nullptr; // required
+            const SIM_VectorField* VIEW2 = nullptr; // optional
+            const SIM_VectorField* VIEW3 = nullptr; // optional
+            const SIM_VectorField* VIEW4 = nullptr; // optional
+        };
+
+        struct Param
+        {
+            UT_Vector3 pos1{};
+            UT_Vector3 pos2{};
+            UT_Vector3 pos3{};
+            UT_Vector3 pos4{};
+        };
+
+        struct Result
+        {
+            SIM_ScalarField* TARGET = nullptr; // required
+        };
+
+        static void Solve(const Input& input, const Param& param, Result& result);
     };
 }
-
 
 #endif //HINAFLOW_TOMOGRAPHY_H

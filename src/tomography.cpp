@@ -33,7 +33,8 @@ void KnInitDensityPartial(SIM_RawField* TARGET, const SIM_VectorField* IMAGE, co
 
 THREADED_METHOD2(, TARGET->shouldMultiThread(), KnInitDensity, SIM_RawField*, TARGET, const SIM_VectorField*, IMAGE);
 
-void KnIntersectionPartial(SIM_RawField* TARGET, const SIM_RawField* T1, const SIM_RawField* T2, const SIM_RawField* T3, const SIM_RawField* T4, const UT_JobInfo& info)
+using ARRAY = std::array<UT_Vector3, 5>;
+void KnIntersectionPartial(SIM_RawField* TARGET, const SIM_RawField* T1, const SIM_RawField* T2, const SIM_RawField* T3, const SIM_RawField* T4, const ARRAY& focus, const UT_JobInfo& info)
 {
     UT_VoxelArrayIteratorF vit;
     vit.setArray(TARGET->fieldNC());
@@ -53,18 +54,18 @@ void KnIntersectionPartial(SIM_RawField* TARGET, const SIM_RawField* T1, const S
     }
 }
 
-THREADED_METHOD5(, T1->shouldMultiThread(), KnIntersection, SIM_RawField*, TARGET, const SIM_RawField*, T1, const SIM_RawField*, T2, const SIM_RawField*, T3, const SIM_RawField*, T4);
+THREADED_METHOD6(, T1->shouldMultiThread(), KnIntersection, SIM_RawField*, TARGET, const SIM_RawField*, T1, const SIM_RawField*, T2, const SIM_RawField*, T3, const SIM_RawField*, T4, const ARRAY&, focus);
 
 void HinaFlow::Tomography::Solve(const Input& input, const Param& param, Result& result)
 {
     std::vector<std::pair<int, int>> view;
-    view.emplace_back(input.VIEW1->getDivisions().x(), input.VIEW1->getDivisions().y());
+    view.emplace_back(static_cast<int>(input.VIEW1->getDivisions().x()), static_cast<int>(input.VIEW1->getDivisions().y()));
     if (input.VIEW2)
-        view.emplace_back(input.VIEW2->getDivisions().x(), input.VIEW2->getDivisions().y());
+        view.emplace_back(static_cast<int>(input.VIEW2->getDivisions().x()), static_cast<int>(input.VIEW2->getDivisions().y()));
     if (input.VIEW3)
-        view.emplace_back(input.VIEW3->getDivisions().x(), input.VIEW3->getDivisions().y());
+        view.emplace_back(static_cast<int>(input.VIEW3->getDivisions().x()), static_cast<int>(input.VIEW3->getDivisions().y()));
     if (input.VIEW4)
-        view.emplace_back(input.VIEW4->getDivisions().x(), input.VIEW4->getDivisions().y());
+        view.emplace_back(static_cast<int>(input.VIEW4->getDivisions().x()), static_cast<int>(input.VIEW4->getDivisions().y()));
 
     SIM_RawField T1(*result.TARGET->getField());
     SIM_RawField T2(*result.TARGET->getField());
@@ -78,5 +79,11 @@ void HinaFlow::Tomography::Solve(const Input& input, const Param& param, Result&
     if (input.VIEW4)
         KnInitDensity(&T4, input.VIEW4);
 
-    KnIntersection(result.TARGET->getField(), &T1, &T2, &T3, &T4);
+    ARRAY focus;
+    focus[0] = param.focus;
+    focus[1] = param.pos1;
+    focus[2] = param.pos2;
+    focus[3] = param.pos3;
+    focus[4] = param.pos4;
+    KnIntersection(result.TARGET->getField(), &T1, &T2, &T3, &T4, focus);
 }

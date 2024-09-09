@@ -31,6 +31,7 @@ namespace HinaFlow
 
         struct Param
         {
+            UT_Vector3 focus{};
             UT_Vector3 pos1{};
             UT_Vector3 pos2{};
             UT_Vector3 pos3{};

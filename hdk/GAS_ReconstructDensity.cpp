@@ -56,6 +56,13 @@ bool GAS_ReconstructDensity::solveGasSubclass(SIM_Engine& engine, SIM_Object* ob
     HinaFlow::Tomography::Result result;
     result.TARGET = TARGET;
     {
+        const std::string& path = TARGET->getPositionPath().toStdString();
+        const size_t lsp = path.find_last_of('/');
+        SIM_Position* pos = SIM_DATA_GET(*obj, lsp != std::string::npos?path.substr(lsp + 1).c_str():path.c_str(), SIM_Position);
+        pos->getPosition(param.focus);
+    }
+
+    {
         const std::string& path = VIEW1->getPositionPath().toStdString();
         const size_t lsp = path.find_last_of('/');
         SIM_Position* pos = SIM_DATA_GET(*obj, lsp != std::string::npos?path.substr(lsp + 1).c_str():path.c_str(), SIM_Position);

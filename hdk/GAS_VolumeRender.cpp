@@ -22,6 +22,7 @@ const SIM_DopDescription* GAS_VolumeRender::getDopDescription()
     ACTIVATE_GAS_COLOR
     ACTIVATE_GAS_DENSITY
     ACTIVATE_GAS_STENCIL
+    PARAMETER_VECTOR_FLOAT_N(FocusPoint, 3, 0, 0, 0)
     PARAMETER_FLOAT(Step, 1)
     PARAMETER_FLOAT(FocalLength, 150)
     PARAMETER_FLOAT(Coeff, 30)
@@ -57,9 +58,9 @@ bool GAS_VolumeRender::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM
     SIM_Position* pos = SIM_DATA_GET(*obj, lsp != std::string::npos?path.substr(lsp + 1).c_str():path.c_str(), SIM_Position);
     UT_Vector3 center;
     pos->getPosition(center);
-    UT_Vector3 dir = center;
+    UT_Vector3 dir = center - getFocusPoint();
     dir.normalize();
 
-    HinaFlow::Image::Render(COLOR, D, VGEO_Ray(-center, dir), static_cast<float>(getStep()), static_cast<float>(getCoeff()));
+    HinaFlow::Image::Render(COLOR, D, VGEO_Ray(-(center - getFocusPoint()), dir), static_cast<float>(getStep()), static_cast<float>(getCoeff()));
     return true;
 }

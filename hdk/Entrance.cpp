@@ -9,6 +9,7 @@
 #include "GAS_PhiFlowSmoke2D.h"
 #include "GAS_PhiFlowSmoke3D.h"
 #include "GAS_PhiFlowVisualizeField.h"
+#include "GAS_RayIntersectVisualizer.h"
 #include "GAS_ReadNPZFiles.h"
 #include "GAS_ReconstructDensity.h"
 #include "GAS_SolveDiffusion.h"
@@ -30,6 +31,7 @@ void initializeSIM(void*)
     IMPLEMENT_DATAFACTORY(GAS_PhiFlowSmoke2D)
     IMPLEMENT_DATAFACTORY(GAS_PhiFlowSmoke3D)
     IMPLEMENT_DATAFACTORY(GAS_PhiFlowVisualizeField)
+    IMPLEMENT_DATAFACTORY(GAS_RayIntersectVisualizer)
     IMPLEMENT_DATAFACTORY(GAS_ReadNPZFiles)
     IMPLEMENT_DATAFACTORY(GAS_ReconstructDensity)
     IMPLEMENT_DATAFACTORY(GAS_SolveDiffusion)

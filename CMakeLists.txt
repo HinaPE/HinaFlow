@@ -24,6 +24,7 @@ set(DOP_NODEs
         PhiFlowSmoke2D
         PhiFlowSmoke3D
         PhiFlowVisualizeField
+        RayIntersectVisualizer
         ReadNPZFiles
         ReconstructDensity
         SolveDiffusion

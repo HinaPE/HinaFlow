@@ -67,10 +67,10 @@ void HinaFlow::Tomography::Solve(const Input& input, const Param& param, Result&
     if (input.VIEW4)
         view.emplace_back(static_cast<int>(input.VIEW4->getDivisions().x()), static_cast<int>(input.VIEW4->getDivisions().y()));
 
-    T1 = *result.TARGET->getField();
-    T2 = *result.TARGET->getField();
-    T3 = *result.TARGET->getField();
-    T4 = *result.TARGET->getField();
+    static SIM_RawField T1 = *result.TARGET->getField();
+    static SIM_RawField T2 = *result.TARGET->getField();
+    static SIM_RawField T3 = *result.TARGET->getField();
+    static SIM_RawField T4 = *result.TARGET->getField();
     T1.makeConstant(0.f);
     T2.makeConstant(0.f);
     T3.makeConstant(0.f);

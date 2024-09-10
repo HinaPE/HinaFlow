@@ -46,11 +46,6 @@ namespace HinaFlow
         };
 
         static void Solve(const Input& input, const Param& param, Result& result);
-
-        inline static SIM_RawField T1;
-        inline static SIM_RawField T2;
-        inline static SIM_RawField T3;
-        inline static SIM_RawField T4;
     };
 }
 

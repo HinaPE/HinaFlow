@@ -77,6 +77,6 @@ bool GAS_VolumeRender::solveGasSubclass(SIM_Engine& engine, SIM_Object* obj, SIM
     UT_Vector3 dir = center - focus;
     dir.normalize();
 
-    HinaFlow::Image::Render(COLOR, D, VGEO_Ray(focus - center, dir), static_cast<float>(getStep()), static_cast<float>(getCoeff()));
+    HinaFlow::Image::RenderBTB(COLOR, D, VGEO_Ray(focus - center, dir), static_cast<float>(getStep()), static_cast<float>(getCoeff()));
     return true;
 }

@@ -28,6 +28,24 @@ void KnWriteFieldPartial(SIM_RawField* TARGET, const std::vector<std::vector<flo
 
 THREADED_METHOD2(, TARGET->shouldMultiThread(), KnWriteField, SIM_RawField*, TARGET, const std::vector<std::vector<float>>&, CACHE);
 
+
+void KnResamplePartial(SIM_RawField* TARGET, const SIM_RawField* SOURCE, const UT_JobInfo& info)
+{
+    UT_VoxelArrayIteratorF vit;
+    vit.setArray(TARGET->fieldNC());
+    vit.setCompressOnExit(true);
+    vit.setPartialRange(info.job(), info.numJobs());
+
+    for (vit.rewind(); !vit.atEnd(); vit.advance())
+    {
+        const UT_Vector3I cell(vit.x(), vit.y(), vit.z());
+        const UT_Vector3& pos = TARGET->indexToPos(cell);
+        vit.setValue(static_cast<float>(SOURCE->getValue(pos)));
+    }
+}
+
+THREADED_METHOD2(, TARGET->shouldMultiThread(), KnResample, SIM_RawField*, TARGET, const SIM_RawField*, SOURCE);
+
 void HinaFlow::Image::Render(SIM_VectorField* TARGET, const SIM_ScalarField* FIELD, const VGEO_Ray& view, const float step, const float coeff)
 {
     const float width = TARGET->getSize().x();
@@ -90,4 +108,17 @@ void HinaFlow::Image::Render(SIM_VectorField* TARGET, const SIM_ScalarField* FIE
     KnWriteField(TARGET->getXField(), cache);
     KnWriteField(TARGET->getYField(), cache);
     KnWriteField(TARGET->getZField(), cache);
+}
+
+void HinaFlow::Image::RenderBTB(SIM_VectorField* TARGET, const SIM_ScalarField* FIELD, const VGEO_Ray& view, const float step, const float coeff)
+{
+    static SIM_RawField RESAMPLE = *FIELD->getField();
+
+    float ratiox = FIELD->getField()->field()->getXRes() / TARGET->getTotalVoxelRes().x();
+    float ratioy = FIELD->getField()->field()->getYRes() / TARGET->getTotalVoxelRes().y();
+    float ratioz = FIELD->getField()->field()->getZRes() / TARGET->getTotalVoxelRes().z();
+    RESAMPLE.fieldNC()->size(static_cast<int>(TARGET->getTotalVoxelRes().x()), static_cast<int>(TARGET->getTotalVoxelRes().y()), static_cast<int>(TARGET->getTotalVoxelRes().x()));
+    KnResample(&RESAMPLE, FIELD->getField());
+
+    std::cout << RESAMPLE.getSize() << " " << RESAMPLE.getVoxelRes() << " " << RESAMPLE.getOrig() << std::endl;
 }

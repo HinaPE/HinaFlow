@@ -36,6 +36,8 @@ namespace HinaFlow
             UT_Vector3 pos2{};
             UT_Vector3 pos3{};
             UT_Vector3 pos4{};
+
+            float threshold = 0.1f;
         };
 
         struct Result
@@ -44,6 +46,11 @@ namespace HinaFlow
         };
 
         static void Solve(const Input& input, const Param& param, Result& result);
+
+        inline static SIM_RawField T1;
+        inline static SIM_RawField T2;
+        inline static SIM_RawField T3;
+        inline static SIM_RawField T4;
     };
 }
 

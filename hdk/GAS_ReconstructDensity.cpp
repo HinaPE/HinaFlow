@@ -24,6 +24,7 @@ const SIM_DopDescription* GAS_ReconstructDensity::getDopDescription()
     ACTIVATE_GAS_VECTOR_FIELD_2
     ACTIVATE_GAS_VECTOR_FIELD_3
     ACTIVATE_GAS_VECTOR_FIELD_4
+    PARAMETER_FLOAT(Threshold, 0.1)
     PRMs.emplace_back();
 
     static SIM_DopDescription DESC(GEN_NODE,
@@ -55,12 +56,8 @@ bool GAS_ReconstructDensity::solveGasSubclass(SIM_Engine& engine, SIM_Object* ob
     HinaFlow::Tomography::Param param;
     HinaFlow::Tomography::Result result;
     result.TARGET = TARGET;
-    {
-        const std::string& path = TARGET->getPositionPath().toStdString();
-        const size_t lsp = path.find_last_of('/');
-        SIM_Position* pos = SIM_DATA_GET(*obj, lsp != std::string::npos?path.substr(lsp + 1).c_str():path.c_str(), SIM_Position);
-        pos->getPosition(param.focus);
-    }
+    param.focus.assign();
+    param.threshold = static_cast<float>(getThreshold());
 
     {
         const std::string& path = VIEW1->getPositionPath().toStdString();

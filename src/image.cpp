@@ -12,6 +12,8 @@
  ******************************************************************************/
 
 
+#include "common.h"
+
 void KnWriteFieldPartial(SIM_RawField* TARGET, const std::vector<std::vector<float>>& CACHE, const UT_JobInfo& info)
 {
     UT_VoxelArrayIteratorF vit;
@@ -74,18 +76,18 @@ void HinaFlow::Image::Render(SIM_VectorField* TARGET, const SIM_ScalarField* FIE
     for (int i = 0; i < resx; ++i)
         cache[i].resize(resy);
 
-    const UT_BlockedRange2D range(0, resx, 0, resy);
-    const UT_Vector2i offset = {resx / 2, resy / 2};
+    const UT_BlockedRange2D range(0, resy, 0, resx);
+    const UT_Vector2i offset = {resy / 2, resx / 2};
     UTparallelFor(range, [&](const UT_BlockedRange2D<int>& r)
     {
         for (int i = r.rows().begin(); i < r.rows().end(); ++i)
         {
             for (int j = r.cols().begin(); j < r.cols().end(); ++j)
             {
-                const VGEO_Ray ray{UT_Vector3{center + right_dir * delta.x() * (i - offset.x()) + up_dir * delta.y() * (j - offset.y())}, view.getD()};
+                const VGEO_Ray ray{UT_Vector3{center + up_dir * delta.x() * (i - offset.x()) + right_dir * delta.y() * (j - offset.y())}, view.getD()};
                 float tmin = 0, tmax = std::numeric_limits<float>::max();
                 const bool intersect = ray.getBoxRange(bbox, tmin, tmax);
-                float cur = tmin;
+                float cur = tmin + step / 2.f;
                 float res = 0;
                 if (intersect)
                 {
@@ -100,7 +102,7 @@ void HinaFlow::Image::Render(SIM_VectorField* TARGET, const SIM_ScalarField* FIE
                     if (sum > 0)
                         res /= static_cast<float>(sum);
                 }
-                cache[i][j] = coeff * res;
+                cache[j][i] = coeff * res;
             }
         }
     });
@@ -112,58 +114,98 @@ void HinaFlow::Image::Render(SIM_VectorField* TARGET, const SIM_ScalarField* FIE
 
 void HinaFlow::Image::RenderBTB(SIM_VectorField* TARGET, const SIM_ScalarField* FIELD, const VGEO_Ray& view, const float step, const float coeff)
 {
+    // TODO: ensure TARGET's res is the same as FIELD's res
+    // maybe no need?
     const float width = TARGET->getSize().x();
     const float height = TARGET->getSize().y();
     const int resx = TARGET->getXField()->field()->getXRes();
     const int resy = TARGET->getXField()->field()->getYRes();
+    const int resz = static_cast<int>(FIELD->getSize().z() / step);
 
-    UT_Vector2 delta = {width / static_cast<float>(resx), height / static_cast<float>(resy)};
+    UT_SparseMatrixF A(resx * resy, resx * resy * resz);
+    UT_VectorF x(0, resx * resy * resz - 1);
+    UT_VectorF b(0, resx * resy - 1);
+
+    // calculate directions
     UT_BoundingBox bbox;
-    FIELD->getBBox(bbox);
-
-    const UT_Vector3 center = view.getP();
-    UT_Vector3 right_dir = cross(view.getD(), UT_Vector3{0, 1, 0});
-    UT_Vector3 up_dir = cross(right_dir, view.getD());
-    right_dir.normalize();
-    up_dir.normalize();
-
-    if (view.getD() == UT_Vector3{0, -1, 0} || view.getD() == UT_Vector3{0, 1, 0})
+    UT_Vector3 center;
+    UT_Vector3 right_dir;
+    UT_Vector3 up_dir;
     {
-        right_dir = UT_Vector3{1, 0, 0};
-        up_dir = UT_Vector3{0, 0, -1};
+        FIELD->getBBox(bbox);
+        center = view.getP();
+        right_dir = cross(view.getD(), UT_Vector3{0, 1, 0});
+        up_dir = cross(right_dir, view.getD());
+        right_dir.normalize();
+        up_dir.normalize();
+        if (view.getD() == UT_Vector3{0, -1, 0} || view.getD() == UT_Vector3{0, 1, 0})
+        {
+            right_dir = UT_Vector3{1, 0, 0};
+            up_dir = UT_Vector3{0, 0, -1};
+        }
     }
 
-    const UT_BlockedRange2D range(0, resx, 0, resy);
-    const UT_Vector2i offset = {resx / 2, resy / 2};
 
-    std::vector<std::vector<std::vector<float>>> cache;
-    cache.resize(resx);
-    for (int i = 0; i < resx; ++i)
-    {
-        cache[i].resize(resy);
-        for (int j = 0; j < resy; ++j)
-            cache[i][j].resize(resx);
-    }
+    const UT_BlockedRange2D range(0, resy, 0, resx);
+    const UT_Vector2i offset = {resy / 2, resx / 2};
+    const UT_Vector2 delta = {width / static_cast<float>(resx), height / static_cast<float>(resy)};
     UTserialFor(range, [&](const UT_BlockedRange2D<int>& r)
     {
         for (int i = r.rows().begin(); i < r.rows().end(); ++i)
         {
             for (int j = r.cols().begin(); j < r.cols().end(); ++j)
             {
-                const VGEO_Ray ray{UT_Vector3{center + right_dir * delta.x() * (i - offset.x()) + up_dir * delta.y() * (j - offset.y())}, view.getD()};
+                const int idx1 = i * resx + j;
+
+                const VGEO_Ray ray{UT_Vector3{center + up_dir * delta.x() * (i - offset.x()) + right_dir * delta.y() * (j - offset.y())}, view.getD()};
                 float tmin = 0, tmax = std::numeric_limits<float>::max();
                 const bool intersect = ray.getBoxRange(bbox, tmin, tmax);
-                float cur = tmin;
+                float cur = tmin + step / 2.f;
                 if (intersect)
                 {
+                    int k = 0;
                     while (cur < tmax)
                     {
                         const UT_Vector3 pt = ray.getPt(cur);
-                        cache[i][j].emplace_back(static_cast<float>(FIELD->getValue(pt)));
+                        const auto value = static_cast<float>(FIELD->getValue(pt));
+
+                        const int idx2 = i * resx + j + k * resx * resy;
+                        A.addToElement(idx1, idx2, 1.f);
+                        if (idx2 >= 0 && idx2 < resx * resy * resz)
+                            x(idx2) = value;
+                        else
+                            printf("idx2: %d, resx: %d, resy: %d, resz: %d, i: %d, j: %d, k: %d\n", idx2, resx, resy, resz, i, j, k);
                         cur += step;
+                        ++k;
                     }
                 }
             }
         }
     });
+    A.compile();
+    // UT_SparseMatrixRowF AImpl;
+    // AImpl.buildFrom(A);
+    // AImpl.multVec(x, b);
+
+    // {
+    //     UT_VoxelArrayIteratorF vit;
+    //     vit.setArray(TARGET->getXField()->fieldNC());
+    //     for (vit.rewind(); !vit.atEnd(); vit.advance())
+    //     {
+    //         const int idx1 = vit.y() * resx + vit.x();
+    //         vit.setValue(b(idx1));
+    //     }
+    //     vit.setArray(TARGET->getYField()->fieldNC());
+    //     for (vit.rewind(); !vit.atEnd(); vit.advance())
+    //     {
+    //         const int idx1 = vit.y() * resx + vit.x();
+    //         vit.setValue(b(idx1));
+    //     }
+    //     vit.setArray(TARGET->getZField()->fieldNC());
+    //     for (vit.rewind(); !vit.atEnd(); vit.advance())
+    //     {
+    //         const int idx1 = vit.y() * resx + vit.x();
+    //         vit.setValue(b(idx1));
+    //     }
+    // }
 }
